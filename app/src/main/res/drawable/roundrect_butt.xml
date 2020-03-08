@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<item>
+    <layer-list>
+        <item android:right="3sp" android:bottom="8sp" android:left="1sp" >
+            <ripple  android:color="@color/colorPrimaryDark" >
+                <item>
+                    <shape android:shape="rectangle">
+                        <solid android:color="#0055F1FF"/>
+                        <stroke android:color="#DF08E9FD" android:width="2sp" />
+                        <!--corners allow us to make the rounded corners button-->
+                        <corners android:radius="30sp" />
+                    </shape>
+                </item>
+
+                <item android:id="@android:id/mask">
+                    <shape android:shape="rectangle">
+                        <solid android:color="#EF08E9FD" />
+                        <corners android:radius="30sp" />
+                    </shape>
+                </item>
+            </ripple>
+        </item>
+        <item android:bottom="2sp">
+            <shape android:shape="rectangle">
+                <gradient android:centerColor="#CD55F1FF" android:angle="90"/>
+                <corners android:radius="30sp" />
+            </shape>
+        </item>
+    </layer-list>
+</item>
+
+</selector>

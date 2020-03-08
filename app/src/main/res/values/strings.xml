@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Norma Usurpation</string>
+    <string name="Home_Description">Home Description</string>
+    <string name="messages_header">Norma Usurpation</string>
+    <string name="signature_title">Norma Usurpation</string>
+    <string name="reply_title">Norma Usurpation</string>
+    <string name="sync_header">Norma Usurpation</string>
+    <string name="sync_title">Norma Usurpation</string>
+    <string name="attachment_summary_off">Norma Usurpation</string>
+    <string name="attachment_summary_on">Norma Usurpation</string>
+    <string name="attachment_title">Norma Usurpation</string>
+    <string name="home_play">Play</string>
+    <string name="Start_Game">Start Game</string>
+    <string name="home_leaderboards">Leaderboard</string>
+    <string name="settings_open" />
+    <string name="user_name">へんたい  おうさま</string>
+    <string name="home_options">Options</string>
+    <string name="Leadreboard_Description">Leadrerboard Backgroung Image</string>
+
+</resources>

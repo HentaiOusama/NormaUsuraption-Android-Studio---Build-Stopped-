@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
+
+        <ImageView
+            android:id="@+id/Home_Background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/Home_Description"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/home_pic" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="300sp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="175sp">
+
+            <Button
+                android:id="@+id/Play_Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/roundrect_butt"
+                android:elevation="20sp"
+                android:padding="15sp"
+                android:text="@string/home_play"
+                android:textColor="#FFFFFF"
+                android:textSize="25sp"
+                android:visibility="visible"
+                android:onClick="Start_Game"/>
+
+            <Button
+                android:layout_marginTop="25sp"
+                android:id="@+id/Options_Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/roundrect_butt"
+                android:elevation="20sp"
+                android:padding="15sp"
+                android:text="@string/home_options"
+                android:textColor="#FFFFFF"
+                android:textSize="25sp"
+                android:visibility="visible"
+                android:onClick="Open_Option"/>
+
+            <Button
+                android:id="@+id/Leaderboards_Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25sp"
+                android:background="@drawable/roundrect_butt"
+                android:padding="15sp"
+                android:paddingStart="25sp"
+                android:paddingEnd="25sp"
+                android:text="@string/home_leaderboards"
+                android:textColor="#FFFFFF"
+                android:textSize="25sp"
+                android:visibility="visible"
+                android:onClick="Show_Leaderboard"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48sp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="2sp"
+            android:layout_marginEnd="2sp"
+            android:layout_marginTop="15sp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/user_button"
+                android:layout_width="48sp"
+                android:layout_height="48sp"
+                android:background="@drawable/sharp_account_circle_white_48dp"
+                android:text="@string/settings_open" />
+
+            <TextView
+                android:background="@drawable/name_bg_round_rect"
+                android:layout_marginStart="2sp"
+                android:id="@+id/textView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6"
+                android:gravity="center_vertical"
+                android:text="@string/user_name"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:maxLines="1"/>
+
+            <LinearLayout
+                android:layout_marginStart="5sp"
+                android:layout_width="0sp"
+                android:layout_height="match_parent"
+                android:layout_weight="13"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:background="@android:color/holo_green_dark"
+                    android:layout_width="0sp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginEnd="5sp"
+                    tools:ignore="NestedWeights,UseCompoundDrawables">
+
+                    <TextView
+                        android:layout_width="0sp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                    </TextView>
+                    <ImageView
+                        android:layout_width="48sp"
+                        android:layout_height="match_parent">
+
+                    </ImageView>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:background="@android:color/holo_green_dark"
+                    android:layout_width="0sp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginEnd="2sp"
+                    tools:ignore="NestedWeights,UseCompoundDrawables">
+
+                    <TextView
+                        android:layout_width="0sp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                    </TextView>
+                    <ImageView
+                        android:layout_width="48sp"
+                        android:layout_height="match_parent">
+
+                    </ImageView>
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/settings_button"
+                    android:layout_width="48sp"
+                    android:layout_height="48sp"
+                    android:background="@drawable/sharp_settings_white_48dp"
+                    android:text="@string/settings_open"
+                    android:onClick="Open_Settings"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
