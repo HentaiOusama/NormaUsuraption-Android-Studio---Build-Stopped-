@@ -43,11 +43,12 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     private static final int MAX_FRAME_TIME = (int) (1000.0 / 60.0); // Time per frame for 60 FPS
     public Context context;
     public boolean firstTimeCreationOfSurface = true;
-    public final String TAG = "TAG";
+    public final String TAG = "MY DEBUG TAG";
 
 
     ///// Below are Drawing related variables
     public int level = 1;
+    public int tempShipTop = 0;
     Bitmap currentBackgroundImage = null;
     float backgroundLeft = 0;
     float backgroundTop = 0;
@@ -58,6 +59,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public int ship_height = 0;
     public int canvas_right = 0;
     public int canvas_bottom = 0;
+    public int shipMaxTopAllowed = 0;
+    public int shipMinTopAllowed = 0;
     public String currentShipName, currentBackgroundName;
     /////
 
@@ -110,10 +113,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 canvas_bottom = metrics.heightPixels;
             }
             buildBackground();
+            buildShip();
             ship_width = currentShip.getWidth();
             ship_height = currentShip.getHeight();
             ship_left = (canvas_right/2) - (ship_width/2);
             ship_top = canvas_bottom;
+            shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
+            shipMinTopAllowed = canvas_bottom-ship_height;
             firstTimeCreationOfSurface = false;
         }
 
@@ -150,7 +156,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
 
-
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
@@ -160,10 +165,14 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             canvas_right = width;
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
+            buildShip();
+            ship_width = currentShip.getWidth();
+            ship_height = currentShip.getHeight();
+            shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
+            shipMinTopAllowed = canvas_bottom-ship_height;
         }
         // resize your UI
     }
-
 
 
 
@@ -176,9 +185,17 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         point.x = (int) event.getX();
         point.y = (int) event.getY();
         ship_left = point.x - (ship_width/2);
+        tempShipTop = point.y - (3*ship_height/4);
+        if(tempShipTop <= shipMaxTopAllowed)
+        {
+            ship_top = shipMaxTopAllowed;
+        }
+        else
+        {
+            ship_top = Math.min(tempShipTop, shipMinTopAllowed);
+        }
         return true;
     }
-
 
 
 
@@ -236,7 +253,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             e.printStackTrace();
         }
     }
-
 
 
 
@@ -304,7 +320,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         float heightRatio = (float) originalHeight/canvas_bottom;
         float widthRatio = (float) originalWidth/canvas_right;
 
-        Log.i("Build Background", "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
+        Log.e(TAG, "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
 
         // Below if else ladder best fits canvas into the image
         if(originalHeight >= canvas_bottom && originalWidth >= canvas_right)
@@ -359,12 +375,28 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
 
-        Log.i("Build Background", "newHeight = " + newHeight + " newWidth = " + newWidth + " top , left = " + backgroundTop + " , " + backgroundLeft);
+        Log.e(TAG, "newHeight = " + newHeight + " newWidth = " + newWidth + " top , left = " + backgroundTop + " , " + backgroundLeft);
         // Now we have new width and height and top, left co - ordinates to crop and resize image into canvas size
         currentBackgroundImage = Bitmap.createBitmap(currentBackgroundImage, (int) backgroundLeft, (int) backgroundTop, (int) newWidth, (int) newHeight);
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
         // So we'll resize the image now. Above only cropped it.
         currentBackgroundImage = Bitmap.createScaledBitmap(currentBackgroundImage, canvas_right, canvas_bottom, true);
+    }
+
+
+
+
+    public void buildShip()
+    {
+        int originalHeight = currentShip.getScaledHeight(currentShip.getDensity());
+        int originalWidth = currentShip.getScaledWidth(currentShip.getDensity());
+        int percentageOfScreen = 15;
+        float heightRequired = (float) percentageOfScreen*canvas_bottom/100;
+        float widthRequired = originalWidth/(originalHeight/heightRequired);
+
+        Log.e(TAG, "newHeight = " + heightRequired + " newWidth = " + widthRequired);
+        // So we'll resize the image now.
+        currentShip = Bitmap.createScaledBitmap(currentShip, (int) widthRequired, (int) heightRequired, true);
     }
     
     
