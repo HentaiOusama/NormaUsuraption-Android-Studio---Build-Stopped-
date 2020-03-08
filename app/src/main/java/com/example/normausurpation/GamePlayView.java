@@ -41,20 +41,36 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     private boolean drawingActive = false; // Drawing thread flag
     public Paint samplePaint = new Paint(); // Paint For drawing the sample shape
     private static final int MAX_FRAME_TIME = (int) (1000.0 / 60.0); // Time per frame for 60 FPS
-    private static final String LOGTAG = "surface";
     public Context context;
     public boolean firstTimeCreationOfSurface = true;
+    public final String TAG = "TAG";
 
 
     ///// Below are Drawing related variables
     public int level = 1;
     Bitmap currentBackgroundImage = null;
-    float backgroundHeight = 0, backgroundWidth = 0, backgroundLeft = 0, backgroundTop = 0;
+    float backgroundLeft = 0;
+    float backgroundTop = 0;
     Bitmap currentShip;
-    public int tempShipLeft = 0, ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, canvas_right = 0, canvas_bottom = 0;
+    public int ship_left = 0;
+    public int ship_top = 0;
+    public int ship_width = 0;
+    public int ship_height = 0;
+    public int canvas_right = 0;
+    public int canvas_bottom = 0;
     public String currentShipName, currentBackgroundName;
     /////
 
+    
+    
+    ///// Below are game related variables
+    public boolean shouldIntroduceSpaceShip = true;
+    public Thread spaceShipIntroducingThread = null;
+    public boolean introducingSpaceShip = false;
+    /////
+    
+    
+    
 
     // constructor
     public GamePlayView(Context context, AttributeSet attrs)
@@ -75,8 +91,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public void surfaceCreated(SurfaceHolder holder)
     {
         this.holder = holder;
-
-
+        
         /* Gets the name of background and Image from the activity_game_play and then builds the background
          * as per our needs but these things in the if only needs to be done once. Outside this might be needed to everytime the surface is created.
          * Say when the app is opened again from recent.*/
@@ -97,26 +112,39 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             buildBackground();
             ship_width = currentShip.getWidth();
             ship_height = currentShip.getHeight();
-            ship_left = 0;
-            ship_top = canvas_bottom - ship_height;
+            ship_left = (canvas_right/2) - (ship_width/2);
+            ship_top = canvas_bottom;
             firstTimeCreationOfSurface = false;
         }
 
-
-        if (drawThread != null)
-        {
-            // drawThread was already running
-            drawingActive = false;
-            try
-            {
-                drawThread.join();
-            }
-            catch (InterruptedException e)
-            { // do nothing
-            }
-        }
         surfaceReady = true;
-        startDrawThread();
+        
+        if(shouldIntroduceSpaceShip || introducingSpaceShip)
+        {
+            if(spaceShipIntroducingThread != null)
+            {
+                // drawThread was already running
+                introducingSpaceShip = false;
+                try {
+                    spaceShipIntroducingThread.join();
+                } catch (InterruptedException e) { // do nothing
+                }
+            }
+            introduceSpaceShip();
+        }
+        else 
+        {
+            if (drawThread != null) {
+                // drawThread was already running
+                drawingActive = false;
+                try {
+                    drawThread.join();
+                } catch (InterruptedException e) { // do nothing
+                }
+            }
+            ship_top = canvas_bottom - ship_height;
+            startDrawThread();
+        }
     }
 
 
@@ -144,7 +172,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public boolean onTouch(View v, MotionEvent event)
     {
         // Handle touch events
-        int eventAction = event.getAction();
         Point point = new Point();
         point.x = (int) event.getX();
         point.y = (int) event.getY();
@@ -159,7 +186,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void run()
     {
-        Log.d(LOGTAG, "Draw thread started");
         long frameStartTime;
         long frameTime;
         try
@@ -207,9 +233,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         } catch (Exception e)
         {
-            Log.w(LOGTAG, "Exception while locking/unlocking");
+            e.printStackTrace();
         }
-        Log.d(LOGTAG, "Draw thread finished");
     }
 
 
@@ -221,7 +246,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     {
         stopDrawThread();
         holder.getSurface().release();
-        Log.e("Destroyed", "Recent Destroyes Surface");
         this.holder = null;
         surfaceReady = false;
     }
@@ -235,7 +259,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     {
         if (drawThread == null)
         {
-            Log.d(LOGTAG, "DrawThread is null");
+            spaceShipIntroducingThread = null;
             return;
         }
         drawingActive = false;
@@ -243,7 +267,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         {
             try
             {
-                Log.d(LOGTAG, "Request last frame");
                 drawThread.join(5000);
                 break;
             } catch (Exception e)
@@ -252,6 +275,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
         drawThread = null;
+        spaceShipIntroducingThread = null;
     }
 
 
@@ -279,7 +303,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         int originalWidth = currentBackgroundImage.getScaledWidth(currentBackgroundImage.getDensity());
         float heightRatio = (float) originalHeight/canvas_bottom;
         float widthRatio = (float) originalWidth/canvas_right;
-        float ratio;
 
         Log.i("Build Background", "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
 
@@ -342,5 +365,83 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
         // So we'll resize the image now. Above only cropped it.
         currentBackgroundImage = Bitmap.createScaledBitmap(currentBackgroundImage, canvas_right, canvas_bottom, true);
+    }
+    
+    
+    
+    // Introduces Space Ship
+    public void introduceSpaceShip()
+    {
+        if (surfaceReady && spaceShipIntroducingThread == null)
+        {
+            spaceShipIntroducingThread = new Thread("Space Ship Introducing Thread")
+            {
+                @Override
+                public void run()
+                {
+                    super.run();
+
+                    long frameStartTime;
+                    long frameTime;
+                    try
+                    {
+                        while (introducingSpaceShip)
+                        {
+                            if (holder == null)
+                            {
+                                return;
+                            }
+
+                            frameStartTime = System.nanoTime();
+                            Canvas canvas = holder.lockCanvas();
+                            if (canvas != null)
+                            {
+                                // clear the screen using black
+                                canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
+                                try
+                                {
+                                    // Your drawing here
+                                    canvas.drawBitmap(currentShip, ship_left, ship_top, null);
+                                    ship_top -= 7;
+                                    if(ship_top + ship_height <= canvas_bottom)
+                                    {
+                                        ship_top = canvas_bottom-ship_height;
+                                        canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
+                                        canvas.drawBitmap(currentShip, ship_left, ship_top, null);
+                                        introducingSpaceShip = false;
+                                        shouldIntroduceSpaceShip = false;
+                                        startDrawThread();
+                                    }
+                                }
+                                finally
+                                {
+
+                                    holder.unlockCanvasAndPost(canvas);
+                                }
+                            }
+
+                            // calculate the time required to draw the frame in ms
+                            frameTime = (System.nanoTime() - frameStartTime) / 1000000;
+
+                            if (frameTime < MAX_FRAME_TIME) // faster than the max fps - limit the FPS
+                            {
+                                try
+                                {
+                                    Thread.sleep(MAX_FRAME_TIME - frameTime);
+                                } catch (InterruptedException e)
+                                {
+                                    // ignore
+                                }
+                            }
+                        }
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            introducingSpaceShip = true;
+            spaceShipIntroducingThread.start();
+        }
     }
 }

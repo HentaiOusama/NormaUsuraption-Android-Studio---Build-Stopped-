@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create and setup the {@link MediaPlayer} for the audio resource associated
                 // with the current word
-                BG_Sound_Player = MediaPlayer.create(this, R.raw.bensound_summer);
+                BG_Sound_Player = MediaPlayer.create(this, R.raw.epic_ride_bensound);
 
                 // Start the audio file
                 BG_Sound_Player.start();
