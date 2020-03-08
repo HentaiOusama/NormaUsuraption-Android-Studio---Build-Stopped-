@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -50,7 +51,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     Bitmap currentBackgroundImage = null;
     float backgroundHeight = 0, backgroundWidth = 0, backgroundLeft = 0, backgroundTop = 0;
     Bitmap currentShip;
-    public int ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, canvas_right = 0, canvas_bottom = 0;
+    public int tempShipLeft = 0, ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, canvas_right = 0, canvas_bottom = 0;
     public String currentShipName, currentBackgroundName;
     /////
 
@@ -96,6 +97,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             buildBackground();
             ship_width = currentShip.getWidth();
             ship_height = currentShip.getHeight();
+            ship_left = 0;
+            ship_top = canvas_bottom - ship_height;
             firstTimeCreationOfSurface = false;
         }
 
@@ -141,7 +144,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public boolean onTouch(View v, MotionEvent event)
     {
         // Handle touch events
-
+        int eventAction = event.getAction();
+        Point point = new Point();
+        point.x = (int) event.getX();
+        point.y = (int) event.getY();
+        ship_left = point.x - (ship_width/2);
         return true;
     }
 
@@ -174,13 +181,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                     try
                     {
                         // Your drawing here
-                        ship_top = canvas_bottom - ship_height;
                         canvas.drawBitmap(currentShip, ship_left, ship_top, null);
-                        if ((ship_left + ship_width) <= canvas_right)
-                        {
-                            ship_left += 3;
-                        }
-
 
                     }
                     finally
@@ -280,7 +281,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         float widthRatio = (float) originalWidth/canvas_right;
         float ratio;
 
-        Log.e("Build Background", "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
+        Log.i("Build Background", "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
 
         // Below if else ladder best fits canvas into the image
         if(originalHeight >= canvas_bottom && originalWidth >= canvas_right)
@@ -335,7 +336,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
 
-        Log.e("Build Background", "newHeight = " + newHeight + " newWidth = " + newWidth + " top , left = " + backgroundTop + " , " + backgroundLeft);
+        Log.i("Build Background", "newHeight = " + newHeight + " newWidth = " + newWidth + " top , left = " + backgroundTop + " , " + backgroundLeft);
         // Now we have new width and height and top, left co - ordinates to crop and resize image into canvas size
         currentBackgroundImage = Bitmap.createBitmap(currentBackgroundImage, (int) backgroundLeft, (int) backgroundTop, (int) newWidth, (int) newHeight);
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
