@@ -269,7 +269,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
 
-
     // Stops the drawing thread
     public void stopDrawThread()
     {
@@ -293,7 +292,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         drawThread = null;
         spaceShipIntroducingThread = null;
     }
-
 
 
 

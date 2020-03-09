@@ -110,7 +110,6 @@ public class GamePlay_Activity extends AppCompatActivity {
 
 
 
-
     @Override
     protected void onResume()
     {
@@ -123,6 +122,9 @@ public class GamePlay_Activity extends AppCompatActivity {
         }
     }
 
+
+
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -130,6 +132,16 @@ public class GamePlay_Activity extends AppCompatActivity {
         startActivity(backIntent);
         finish();
     }
+
+
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseMediaPlayer();
+    }
+
 
 
 
