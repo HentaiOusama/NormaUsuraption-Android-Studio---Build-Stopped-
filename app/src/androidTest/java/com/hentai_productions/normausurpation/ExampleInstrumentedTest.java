@@ -1,4 +1,4 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.normausurpation", appContext.getPackageName());
+        assertEquals("com.hentai_productions.normausurpation", appContext.getPackageName());
     }
 }

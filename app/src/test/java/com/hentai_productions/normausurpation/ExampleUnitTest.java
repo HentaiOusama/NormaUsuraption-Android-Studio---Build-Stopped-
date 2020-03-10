@@ -1,4 +1,4 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import org.junit.Test;
 

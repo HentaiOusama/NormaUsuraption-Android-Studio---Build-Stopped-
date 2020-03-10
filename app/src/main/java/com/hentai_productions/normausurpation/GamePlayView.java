@@ -1,4 +1,4 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,6 +14,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+
+import java.util.Queue;
 
 
 /* It is important to understand which method is called when.
@@ -49,31 +51,26 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     ///// Below are Drawing related variables
     public int level = 1;
     public int tempShipTop = 0;
-    Bitmap currentBackgroundImage = null;
-    float backgroundLeft = 0;
-    float backgroundTop = 0;
-    Bitmap currentShip;
-    public int ship_left = 0;
-    public int ship_top = 0;
-    public int ship_width = 0;
-    public int ship_height = 0;
-    public int canvas_right = 0;
-    public int canvas_bottom = 0;
-    public int shipMaxTopAllowed = 0;
-    public int shipMinTopAllowed = 0;
+    Bitmap currentBackgroundImage = null, currentShipImage = null;
+    float backgroundLeft = 0, backgroundTop = 0;
+    public int ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, shipMaxTopAllowed = 0, shipMinTopAllowed = 0;
+    public int canvas_right = 0, canvas_bottom = 0;
+    public ShipObject currentShip;
     public String currentShipName, currentBackgroundName;
+    public myQueue<Bullet> bulletQueue = new myQueue<Bullet>() ;
+    public Bullet bullet, drawBullet;
+    public long frameStartTime, frameTime, previousBulletStartTime = 0, previousBulletTimeSpan;
+    public boolean shouldBuildBullets = true;
     /////
 
-    
     
     ///// Below are game related variables
     public boolean shouldIntroduceSpaceShip = true;
     public Thread spaceShipIntroducingThread = null;
     public boolean introducingSpaceShip = false;
+    public Thread bulletBuildingThread = null;
+    public int numberOfBullets = 0, tempBulletTop, tempBulletLeft, numberOfBulletsToDraw;
     /////
-    
-    
-    
 
     // constructor
     public GamePlayView(Context context, AttributeSet attrs)
@@ -88,8 +85,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-
-
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -100,10 +95,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
          * Say when the app is opened again from recent.*/
         if(firstTimeCreationOfSurface)
         {
-            currentShipName = GamePlay_Activity.getCurrentShipName();
+            currentShip = GamePlay_Activity.getCurrentShip();
             currentBackgroundName = GamePlay_Activity.getBackgroundName();
+            Log.e(TAG, "surfaceCreated: " + currentBackgroundName);
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
-            currentShip = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentShipName, "drawable", context.getPackageName()));
+            currentShipImage = currentShip.getShipImage();
             DisplayMetrics metrics = new DisplayMetrics();
             WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             assert windowManager != null;
@@ -114,8 +110,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
             buildBackground();
             buildShip();
-            ship_width = currentShip.getWidth();
-            ship_height = currentShip.getHeight();
+            ship_width = currentShipImage.getWidth();
+            ship_height = currentShipImage.getHeight();
             ship_left = (canvas_right/2) - (ship_width/2);
             ship_top = canvas_bottom;
             shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
@@ -145,6 +141,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 drawingActive = false;
                 try {
                     drawThread.join();
+                    bulletBuildingThread.join();
                 } catch (InterruptedException e) { // do nothing
                 }
             }
@@ -152,8 +149,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             startDrawThread();
         }
     }
-
-
 
 
     @Override
@@ -166,15 +161,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
             buildShip();
-            ship_width = currentShip.getWidth();
-            ship_height = currentShip.getHeight();
+            ship_width = currentShipImage.getWidth();
+            ship_height = currentShipImage.getHeight();
             shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
             shipMinTopAllowed = canvas_bottom-ship_height;
         }
         // resize your UI
     }
-
-
 
 
     @Override
@@ -198,13 +191,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-
-
     @Override
     public void run()
     {
-        long frameStartTime;
-        long frameTime;
         try
         {
             while (drawingActive)
@@ -218,13 +207,35 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 Canvas canvas = holder.lockCanvas();
                 if (canvas != null)
                 {
-                    // clear the screen using black
-                    canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
-
                     try
                     {
                         // Your drawing here
-                        canvas.drawBitmap(currentShip, ship_left, ship_top, null);
+                        canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
+                        numberOfBullets = bulletQueue.getSize();
+                        for(int i = 0; i < numberOfBullets; i++)
+                        {
+                            bullet = bulletQueue.get(i);
+                            tempBulletLeft = bullet.getLocationLeft() + bullet.getRightSpeed() - bullet.getLeftSpeed();
+                            tempBulletTop = (bullet.getLocationTop()) - bullet.getUpSpeed() + bullet.getDownSpeed();
+                            if(tempBulletTop <= 0 || tempBulletTop >= canvas_bottom || tempBulletLeft <= 0 || tempBulletLeft >= canvas_right)
+                            {
+                                bulletQueue.Dequeue(i);
+                                numberOfBullets -= 1;
+                                i -= 1;
+                            }
+                            else
+                            {
+                                bulletQueue.setLocationTop(i, tempBulletTop);
+                                bulletQueue.setLocationLeft(i, tempBulletLeft);
+                            }
+                        }
+                        numberOfBulletsToDraw = bulletQueue.getSize();
+                        for(int i = 0; i < numberOfBulletsToDraw; i++)
+                        {
+                            drawBullet = bulletQueue.get(i);
+                            canvas.drawBitmap(drawBullet.getBulletImage(), drawBullet.getLocationLeft(), drawBullet.getLocationTop(), null);
+                        }
+                        canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
 
                     }
                     finally
@@ -255,8 +266,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-
-
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
@@ -265,8 +274,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         this.holder = null;
         surfaceReady = false;
     }
-
-
 
 
     // Stops the drawing thread
@@ -290,10 +297,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
         drawThread = null;
+        bulletBuildingThread = null;
         spaceShipIntroducingThread = null;
     }
-
-
 
 
     // Creates a new draw thread and starts it.
@@ -304,9 +310,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             drawThread = new Thread(this, "Draw thread");
             drawingActive = true;
             drawThread.start();
+            buildBullets();
         }
     }
-
 
 
     // Builds background to fit screen
@@ -382,22 +388,19 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-
-
     public void buildShip()
     {
-        int originalHeight = currentShip.getScaledHeight(currentShip.getDensity());
-        int originalWidth = currentShip.getScaledWidth(currentShip.getDensity());
+        int originalHeight = currentShipImage.getScaledHeight(currentShipImage.getDensity());
+        int originalWidth = currentShipImage.getScaledWidth(currentShipImage.getDensity());
         int percentageOfScreen = 15;
         float heightRequired = (float) percentageOfScreen*canvas_bottom/100;
         float widthRequired = originalWidth/(originalHeight/heightRequired);
 
         Log.e(TAG, "newHeight = " + heightRequired + " newWidth = " + widthRequired);
         // So we'll resize the image now.
-        currentShip = Bitmap.createScaledBitmap(currentShip, (int) widthRequired, (int) heightRequired, true);
+        currentShipImage = Bitmap.createScaledBitmap(currentShipImage, (int) widthRequired, (int) heightRequired, true);
     }
-    
-    
+
     
     // Introduces Space Ship
     public void introduceSpaceShip()
@@ -431,15 +434,16 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                 try
                                 {
                                     // Your drawing here
-                                    canvas.drawBitmap(currentShip, ship_left, ship_top, null);
+                                    canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
                                     ship_top -= 7;
                                     if(ship_top + ship_height <= canvas_bottom)
                                     {
                                         ship_top = canvas_bottom-ship_height;
                                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
-                                        canvas.drawBitmap(currentShip, ship_left, ship_top, null);
+                                        canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
                                         introducingSpaceShip = false;
                                         shouldIntroduceSpaceShip = false;
+                                        spaceShipIntroducingThread = null;
                                         startDrawThread();
                                     }
                                 }
@@ -473,5 +477,73 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             introducingSpaceShip = true;
             spaceShipIntroducingThread.start();
         }
+    }
+
+
+    // Builds Bullets
+    public void buildBullets()
+    {
+        if(shouldBuildBullets && bulletBuildingThread == null)
+        {
+            bulletBuildingThread = new Thread("Bullets Building Thread")
+            {
+                @Override
+                public void run() {
+                    super.run();
+
+                    do
+                    {
+                        previousBulletStartTime = System.nanoTime() / 1000000 ;
+                        bullet = new Bullet(currentShip.getBulletImage(), currentShip.getBulletUpSpeed(), currentShip.getBulletDownSpeed(),
+                                currentShip.getBulletRightSpeed(), currentShip.getBulletLeftSpeed(), currentShip.getMillisBeforeNextBullet());
+
+                        bullet.setLocationLeft((int) (ship_left + (currentShipImage.getScaledWidth(currentShipImage.getDensity()) * 0.5) - (currentShip.getBulletImage().getScaledWidth(currentShip.getBulletImage().getDensity())) * 0.5));
+                        bullet.setLocationTop((int) (ship_top + (currentShipImage.getScaledHeight(currentShipImage.getDensity()) * 0.5) - (currentShip.getBulletImage().getScaledHeight(currentShip.getBulletImage().getDensity())) * 0.5));
+                        bulletQueue.Enqueue(bullet);
+                        previousBulletTimeSpan = (System.nanoTime() / 1000000) - previousBulletStartTime;
+                        try {
+                            Thread.sleep(bullet.getMillisBeforeNextBullet() - previousBulletTimeSpan);
+                        } catch (InterruptedException e) {
+                            Log.e(TAG, "run: ", e);
+                        }
+                    }
+                    while (shouldBuildBullets);
+                }
+            };
+            bulletBuildingThread.start();
+        }
+    }
+
+
+    // Calls relevant function that builds enemies as per the current level
+    public void buildLevel(int currentLevel)
+    {
+        switch (currentLevel)
+        {
+            case 1:
+                buildLevel1();
+                break;
+
+            case 2 :
+                buildLevel2();
+                break;
+
+            default :
+                break;
+        }
+    }
+
+
+    // Builds Level 1
+    public void buildLevel1()
+    {
+
+    }
+
+
+    // Builds Level 2
+    public void buildLevel2()
+    {
+
     }
 }

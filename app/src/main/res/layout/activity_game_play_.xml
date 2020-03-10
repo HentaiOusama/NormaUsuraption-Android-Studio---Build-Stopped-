@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.example.normausurpation.GamePlayView
+        <com.hentai_productions.normausurpation.GamePlayView
             android:id="@+id/gamePlaySurfaceView"
             android:layout_height="match_parent"
             android:layout_width="match_parent"/>

@@ -1,23 +1,27 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
+
+import android.graphics.Bitmap;
 
 public class Bullet
 {
-    private String name;
+    private Bitmap bulletImage;
     private int upSpeed, downSpeed, rightSpeed, leftSpeed;
     private int locationTop, locationLeft;
+    private int millisBeforeNextBullet;
 
-    Bullet(String name, int upSpeed, int downSpeed, int rightSpeed, int leftSpeed)
+    Bullet(Bitmap bulletImage, int upSpeed, int downSpeed, int rightSpeed, int leftSpeed, int millisBeforeNextBullet)
     {
-        this.name = name;
+        this.bulletImage = bulletImage;
         this.upSpeed = upSpeed;
         this.downSpeed = downSpeed;
         this.rightSpeed = rightSpeed;
         this.leftSpeed = leftSpeed;
+        this.millisBeforeNextBullet = millisBeforeNextBullet;
     }
 
-    public String getBulletName()
+    public Bitmap getBulletImage()
     {
-        return name;
+        return bulletImage;
     }
 
     public int getUpSpeed()
@@ -50,13 +54,18 @@ public class Bullet
         return locationLeft;
     }
 
-    public void setLocationTop(int top)
+    void setLocationTop(int top)
     {
         locationTop = top;
     }
 
-    public void setLocationLeft(int left)
+    void setLocationLeft(int left)
     {
         locationLeft = left;
+    }
+    
+    int getMillisBeforeNextBullet()
+    {
+        return millisBeforeNextBullet;
     }
 }

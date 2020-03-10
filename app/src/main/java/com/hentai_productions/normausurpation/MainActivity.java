@@ -1,4 +1,4 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import android.content.Context;
 import android.content.Intent;
@@ -56,10 +56,9 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -215,9 +214,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
     @Override
     protected void onResume()
     {
@@ -230,9 +226,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -243,16 +236,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         releaseMediaPlayer();
     }
-
-
 
 
     public void changeActivity()

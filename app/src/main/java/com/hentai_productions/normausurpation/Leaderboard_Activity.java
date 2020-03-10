@@ -1,13 +1,10 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyCharacterMap;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 
 public class Leaderboard_Activity extends AppCompatActivity {
 

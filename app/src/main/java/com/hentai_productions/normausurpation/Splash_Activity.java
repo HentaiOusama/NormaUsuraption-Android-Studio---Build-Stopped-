@@ -1,6 +1,5 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;

@@ -1,21 +1,19 @@
-package com.example.normausurpation;
+package com.hentai_productions.normausurpation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyCharacterMap;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 
 public class GamePlay_Activity extends AppCompatActivity {
 
     public static String currentShipName, backgroundName;
+    public static ShipObject currentShip;
 
     View decorView;
     int uiOptionsForDevicesWithoutNavBar = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -60,13 +58,17 @@ public class GamePlay_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_play_);
 
-        gamePlayView = (GamePlayView) findViewById(R.id.gamePlaySurfaceView);
+        gamePlayView = findViewById(R.id.gamePlaySurfaceView);
 
         //Remove NavBar
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
         currentShipName = "sp_ship_1";
         backgroundName = "level_1_background";
+
+        currentShip = new ShipObject(BitmapFactory.decodeResource(getResources(), R.drawable.sp_ship_1),
+                BitmapFactory.decodeResource(getResources(), R.drawable.sharp_settings_white_48dp),
+                30, 0, 0, 0, 300);
 
         if(isMusicEnabled)
         {
@@ -93,8 +95,6 @@ public class GamePlay_Activity extends AppCompatActivity {
     }
 
 
-
-
     @Override
     protected void onPause()
     {
@@ -106,8 +106,6 @@ public class GamePlay_Activity extends AppCompatActivity {
             BG_Sound_Player.pause();
         }
     }
-
-
 
 
     @Override
@@ -123,8 +121,6 @@ public class GamePlay_Activity extends AppCompatActivity {
     }
 
 
-
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -134,8 +130,6 @@ public class GamePlay_Activity extends AppCompatActivity {
     }
 
 
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -143,11 +137,9 @@ public class GamePlay_Activity extends AppCompatActivity {
     }
 
 
-
-
-    public static String getCurrentShipName()
+    public static ShipObject getCurrentShip()
     {
-        return currentShipName;
+        return currentShip;
     }
 
     public static String getBackgroundName()
