@@ -12,8 +12,7 @@ import android.view.View;
 
 public class GamePlay_Activity extends AppCompatActivity {
 
-    public static String currentShipName, backgroundName;
-    public static ShipObject currentShip;
+    public static String currentShipName, backgroundName, currentFriendlyBulletName;
 
     View decorView;
     int uiOptionsForDevicesWithoutNavBar = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -64,7 +63,9 @@ public class GamePlay_Activity extends AppCompatActivity {
         //Remove NavBar
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        currentShipName = "sp_ship_1";
         backgroundName = "level_1_background";
+        currentFriendlyBulletName = "red_animated_bullet_";
 
         if(isMusicEnabled)
         {
@@ -136,6 +137,16 @@ public class GamePlay_Activity extends AppCompatActivity {
     public static String getBackgroundName()
     {
         return backgroundName;
+    }
+
+    public static String getCurrentFriendlyBulletName()
+    {
+        return currentFriendlyBulletName;
+    }
+
+    public static String getCurrentShipName()
+    {
+        return currentShipName;
     }
 
     private void releaseMediaPlayer()

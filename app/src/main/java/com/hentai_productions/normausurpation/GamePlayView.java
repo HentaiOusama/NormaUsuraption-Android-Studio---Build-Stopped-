@@ -49,14 +49,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     ///// Below are Drawing related variables
-    public int lifeLevel = 1;
     public int tempShipTop = 0;
     Bitmap currentBackgroundImage = null, currentShipImage = null;
     float backgroundLeft = 0, backgroundTop = 0;
     public int ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, shipMaxTopAllowed = 0, shipMinTopAllowed = 0;
     public int canvas_right = 0, canvas_bottom = 0;
     public ShipObject currentShip;
-    public String currentShipName, currentBackgroundName;
+    public String currentShipName, currentBackgroundName, currentFriendlyBulletName;
     public myQueue<Bullet> bulletQueue = new myQueue<Bullet>() ;
     public Bullet bullet, drawBullet;
     public long frameStartTime, frameTime, previousBulletStartTime = 0, previousBulletTimeSpan;
@@ -65,11 +64,21 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     
     ///// Below are game related variables
+    // Introducing Space Ship
     public boolean shouldIntroduceSpaceShip = true;
     public Thread spaceShipIntroducingThread = null;
     public boolean introducingSpaceShip = false;
+
+    // Regarding Bullets
     public Thread bulletBuildingThread = null;
     public int numberOfBullets = 0, tempBulletTop, tempBulletLeft, numberOfBulletsToDraw;
+
+    //Regarding LifeBar
+    public int lifeLevel = 1;
+    public int outerLifeBarTop, outerLifeBarLeft, outerLifeBarHeight, outerLifeBarWidth, innerLifeBarTop,
+            innerLifeBarLeft, innerLifeBarHeight, innerLifeBarWidth, lifeLevelBoxTop, lifeLevelBoxLeft,
+            lifeLevelBoxEdgeLength, innerLifeBarBottom;
+    public Paint outerLifeBarPaint, innerLifeBarPaint, lifeBarBoxPaint, lifeBarBoxTextPaint;
     /////
 
     // constructor
@@ -95,12 +104,16 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
          * Say when the app is opened again from recent.*/
         if(firstTimeCreationOfSurface)
         {
-            currentShip = new ShipObject(context, BitmapFactory.decodeResource(getResources(), R.drawable.sp_ship_1),
-                    "red_animated_bullet_", 10, 30, 0,
-                    0, 0, 300);
+            currentShipName = GamePlay_Activity.getCurrentShipName();
+            currentFriendlyBulletName = GamePlay_Activity.getCurrentFriendlyBulletName();
+            currentShip = new ShipObject(context, BitmapFactory.decodeResource(getResources(),
+                    getResources().getIdentifier(currentShipName, "drawable", context.getPackageName())),
+                    currentFriendlyBulletName, 10, 30, 0,
+                    0, 0, 200);
             currentBackgroundName = GamePlay_Activity.getBackgroundName();
             Log.e(TAG, "surfaceCreated: " + currentBackgroundName);
-            currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
+            currentBackgroundImage = BitmapFactory.decodeResource(getResources(),
+                    getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             currentShipImage = currentShip.getShipImage();
             DisplayMetrics metrics = new DisplayMetrics();
             WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -112,6 +125,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
             buildBackground();
             buildShip();
+            buildLifeBar();
             ship_width = currentShipImage.getWidth();
             ship_height = currentShipImage.getHeight();
             ship_left = (canvas_right/2) - (ship_width/2);
@@ -163,6 +177,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
             buildShip();
+            buildLifeBar();
             ship_width = currentShipImage.getWidth();
             ship_height = currentShipImage.getHeight();
             shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
@@ -212,6 +227,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                     try
                     {
                         // Your drawing here
+                        // First is Background
                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
                         numberOfBullets = bulletQueue.getSize();
                         for(int i = 0; i < numberOfBullets; i++)
@@ -237,6 +253,18 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                             drawBullet = bulletQueue.get(i);
                             canvas.drawBitmap(drawBullet.getBulletImage(), drawBullet.getLocationLeft(), drawBullet.getLocationTop(), null);
                         }
+
+                        // Second Last is Life Bar
+                        canvas.drawRoundRect(outerLifeBarLeft, outerLifeBarTop, (outerLifeBarLeft + outerLifeBarWidth),
+                                (outerLifeBarTop + outerLifeBarHeight),15,15, outerLifeBarPaint);
+                        canvas.drawRoundRect(innerLifeBarLeft, innerLifeBarTop, (innerLifeBarLeft + innerLifeBarWidth),
+                                (innerLifeBarTop + innerLifeBarHeight),15,15, innerLifeBarPaint);
+                        canvas.drawRoundRect(lifeLevelBoxLeft, lifeLevelBoxTop, (lifeLevelBoxLeft + lifeLevelBoxEdgeLength),
+                                (lifeLevelBoxTop + lifeLevelBoxEdgeLength),15,15, lifeBarBoxPaint);
+                        canvas.drawText(Integer.toString(lifeLevel), (float) (lifeLevelBoxLeft + (lifeLevelBoxEdgeLength*0.25)),
+                                (lifeLevelBoxTop + lifeLevelBoxEdgeLength - 5), lifeBarBoxTextPaint);
+
+                        // Last is Ship
                         canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
 
                     }
@@ -261,7 +289,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                     }
                 }
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -387,6 +416,37 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
         // So we'll resize the image now. Above only cropped it.
         currentBackgroundImage = Bitmap.createScaledBitmap(currentBackgroundImage, canvas_right, canvas_bottom, true);
+    }
+
+
+    public void buildLifeBar()
+    {
+        outerLifeBarHeight = (int) (canvas_bottom * 0.25);
+        outerLifeBarWidth = (int) (canvas_right * 0.075);
+        outerLifeBarTop = (int) ((canvas_bottom*0.5) - (outerLifeBarHeight*0.5));
+        outerLifeBarLeft = (int) ((canvas_right - (canvas_right*0.02)) - (outerLifeBarWidth));
+        innerLifeBarWidth = (int) (0.75 * outerLifeBarWidth);
+        innerLifeBarLeft = (int) (outerLifeBarLeft + (0.5 * outerLifeBarWidth) - (0.5 * innerLifeBarWidth));
+        lifeLevelBoxEdgeLength = innerLifeBarWidth;
+        int gap = (outerLifeBarWidth - innerLifeBarWidth)/2;
+        innerLifeBarTop = outerLifeBarTop + gap;
+        innerLifeBarHeight = outerLifeBarHeight - lifeLevelBoxEdgeLength - gap - gap - gap;
+        lifeLevelBoxLeft = innerLifeBarLeft;
+        lifeLevelBoxTop = innerLifeBarTop + innerLifeBarHeight + gap;
+        innerLifeBarBottom = innerLifeBarTop + innerLifeBarHeight;
+        outerLifeBarPaint = new Paint();
+        innerLifeBarPaint = new Paint();
+        lifeBarBoxPaint = new Paint();
+        lifeBarBoxTextPaint = new Paint();
+        outerLifeBarPaint.setARGB(188, 255, 229, 0);
+        innerLifeBarPaint.setARGB(222, 137, 255, 0);
+        lifeBarBoxPaint.setARGB(195, 0, 226, 255);
+        lifeBarBoxTextPaint.setARGB(220, 0, 0, 0);
+        outerLifeBarPaint.setAntiAlias(true);
+        innerLifeBarPaint.setAntiAlias(true);
+        lifeBarBoxPaint.setAntiAlias(true);
+        lifeBarBoxTextPaint.setAntiAlias(true);
+        lifeBarBoxTextPaint.setTextSize(lifeLevelBoxEdgeLength);
     }
 
 
