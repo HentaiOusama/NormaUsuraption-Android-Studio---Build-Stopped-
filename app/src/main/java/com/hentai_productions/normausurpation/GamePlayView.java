@@ -49,7 +49,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     ///// Below are Drawing related variables
-    public int level = 1;
+    public int lifeLevel = 1;
     public int tempShipTop = 0;
     Bitmap currentBackgroundImage = null, currentShipImage = null;
     float backgroundLeft = 0, backgroundTop = 0;
@@ -95,7 +95,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
          * Say when the app is opened again from recent.*/
         if(firstTimeCreationOfSurface)
         {
-            currentShip = GamePlay_Activity.getCurrentShip();
+            currentShip = new ShipObject(context, BitmapFactory.decodeResource(getResources(), R.drawable.sp_ship_1),
+                    "red_animated_bullet_", 10, 30, 0,
+                    0, 0, 300);
             currentBackgroundName = GamePlay_Activity.getBackgroundName();
             Log.e(TAG, "surfaceCreated: " + currentBackgroundName);
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
@@ -310,7 +312,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             drawThread = new Thread(this, "Draw thread");
             drawingActive = true;
             drawThread.start();
-            buildBullets();
+            buildBullets(lifeLevel);
         }
     }
 
@@ -481,36 +483,57 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     // Builds Bullets
-    public void buildBullets()
+    public void buildBullets(int lifeLevel)
     {
         if(shouldBuildBullets && bulletBuildingThread == null)
         {
-            bulletBuildingThread = new Thread("Bullets Building Thread")
+            switch (lifeLevel)
             {
-                @Override
-                public void run() {
-                    super.run();
-
-                    do
+                case 1 :
+                    bulletBuildingThread = new Thread("Bullets Building Thread")
                     {
-                        previousBulletStartTime = System.nanoTime() / 1000000 ;
-                        bullet = new Bullet(currentShip.getBulletImage(), currentShip.getBulletUpSpeed(), currentShip.getBulletDownSpeed(),
-                                currentShip.getBulletRightSpeed(), currentShip.getBulletLeftSpeed(), currentShip.getMillisBeforeNextBullet());
+                        @Override
+                        public void run() {
+                            super.run();
 
-                        bullet.setLocationLeft((int) (ship_left + (currentShipImage.getScaledWidth(currentShipImage.getDensity()) * 0.5) - (currentShip.getBulletImage().getScaledWidth(currentShip.getBulletImage().getDensity())) * 0.5));
-                        bullet.setLocationTop((int) (ship_top + (currentShipImage.getScaledHeight(currentShipImage.getDensity()) * 0.5) - (currentShip.getBulletImage().getScaledHeight(currentShip.getBulletImage().getDensity())) * 0.5));
-                        bulletQueue.Enqueue(bullet);
-                        previousBulletTimeSpan = (System.nanoTime() / 1000000) - previousBulletStartTime;
-                        try {
-                            Thread.sleep(bullet.getMillisBeforeNextBullet() - previousBulletTimeSpan);
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "run: ", e);
+                            double shipWidthHalf = (currentShipImage.getScaledWidth(currentShipImage.getDensity()) * 0.5);
+                            double shipHeightHalf = (currentShipImage.getScaledHeight(currentShipImage.getDensity()) * 0.5);
+                            double bulletWidthHalf = (currentShip.getBulletWidth()) * 0.5;
+                            double bulletHeightHalf = (currentShip.getBulletHeight()) * 0.5;
+
+                            do
+                            {
+                                previousBulletStartTime = System.nanoTime() / 1000000 ;
+                                bullet = new Bullet(currentShip.getLoopBulletFrame(), currentShip.getBulletUpSpeed(), currentShip.getBulletDownSpeed(),
+                                        currentShip.getBulletRightSpeed(), currentShip.getBulletLeftSpeed(), currentShip.getMillisBeforeNextBullet());
+
+                                bullet.setLocationLeft((int) (ship_left + shipWidthHalf - bulletWidthHalf));
+                                bullet.setLocationTop((int) (ship_top + shipHeightHalf - bulletHeightHalf));
+                                bulletQueue.Enqueue(bullet);
+                                previousBulletTimeSpan = (System.nanoTime() / 1000000) - previousBulletStartTime;
+                                try {
+                                    Thread.sleep(bullet.getMillisBeforeNextBullet() - previousBulletTimeSpan);
+                                } catch (InterruptedException e) {
+                                    Log.e(TAG, "run: ", e);
+                                }
+                            }
+                            while (shouldBuildBullets);
                         }
-                    }
-                    while (shouldBuildBullets);
-                }
-            };
-            bulletBuildingThread.start();
+                    };
+                    bulletBuildingThread.start();
+                    break;
+
+                case 2:
+                    break;
+
+                case 3:
+                    break;
+            }
+        }
+        else if (bulletBuildingThread != null && shouldBuildBullets)
+        {
+            bulletBuildingThread = null;
+            buildBullets(lifeLevel);
         }
     }
 

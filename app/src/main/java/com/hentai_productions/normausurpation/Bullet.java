@@ -2,7 +2,7 @@ package com.hentai_productions.normausurpation;
 
 import android.graphics.Bitmap;
 
-public class Bullet
+class Bullet
 {
     private Bitmap bulletImage;
     private int upSpeed, downSpeed, rightSpeed, leftSpeed;
@@ -19,37 +19,37 @@ public class Bullet
         this.millisBeforeNextBullet = millisBeforeNextBullet;
     }
 
-    public Bitmap getBulletImage()
+    Bitmap getBulletImage()
     {
         return bulletImage;
     }
 
-    public int getUpSpeed()
+    int getUpSpeed()
     {
         return upSpeed;
     }
 
-    public int getDownSpeed()
+    int getDownSpeed()
     {
         return downSpeed;
     }
 
-    public int getLeftSpeed()
+    int getLeftSpeed()
     {
         return leftSpeed;
     }
 
-    public int getRightSpeed()
+    int getRightSpeed()
     {
         return rightSpeed;
     }
 
-    public int getLocationTop()
+    int getLocationTop()
     {
         return locationTop;
     }
 
-    public int getLocationLeft()
+    int getLocationLeft()
     {
         return locationLeft;
     }

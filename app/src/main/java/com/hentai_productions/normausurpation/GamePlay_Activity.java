@@ -54,7 +54,8 @@ public class GamePlay_Activity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_play_);
 
@@ -63,12 +64,7 @@ public class GamePlay_Activity extends AppCompatActivity {
         //Remove NavBar
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
-        currentShipName = "sp_ship_1";
         backgroundName = "level_1_background";
-
-        currentShip = new ShipObject(BitmapFactory.decodeResource(getResources(), R.drawable.sp_ship_1),
-                BitmapFactory.decodeResource(getResources(), R.drawable.sharp_settings_white_48dp),
-                30, 0, 0, 0, 300);
 
         if(isMusicEnabled)
         {
@@ -136,11 +132,6 @@ public class GamePlay_Activity extends AppCompatActivity {
         releaseMediaPlayer();
     }
 
-
-    public static ShipObject getCurrentShip()
-    {
-        return currentShip;
-    }
 
     public static String getBackgroundName()
     {
