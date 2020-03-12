@@ -74,11 +74,12 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public int numberOfBullets = 0, tempBulletTop, tempBulletLeft, numberOfBulletsToDraw;
 
     //Regarding LifeBar
-    public int lifeLevel = 1;
+    public int lifeLevel = 1, lifeLevelProgress = 8; // 1 Life Level is Distributed in 10 levels. Check buildLifeBar() function to get the line that distributes 1 level into 10
     public int outerLifeBarTop, outerLifeBarLeft, outerLifeBarHeight, outerLifeBarWidth, innerLifeBarTop,
             innerLifeBarLeft, innerLifeBarHeight, innerLifeBarWidth, lifeLevelBoxTop, lifeLevelBoxLeft,
-            lifeLevelBoxEdgeLength, innerLifeBarBottom;
-    public Paint outerLifeBarPaint, innerLifeBarPaint, lifeBarBoxPaint, lifeBarBoxTextPaint;
+            lifeLevelBoxEdgeLength, innerLifeBarBottom, innerLifeBarProgressBarLeft, innerLifeBarProgressBarWidth,
+            innerLifeBarProgressBarSingleBlockHeight, innerLifeBarProgressBarBottom;
+    public Paint outerLifeBarPaint, innerLifeBarPaint, lifeBarBoxPaint, lifeBarBoxTextPaint, innerLifeBarProgressBarMainPaint;
     /////
 
     // constructor
@@ -256,13 +257,17 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
                         // Second Last is Life Bar
                         canvas.drawRoundRect(outerLifeBarLeft, outerLifeBarTop, (outerLifeBarLeft + outerLifeBarWidth),
-                                (outerLifeBarTop + outerLifeBarHeight),15,15, outerLifeBarPaint);
+                                (outerLifeBarTop + outerLifeBarHeight),12,12, outerLifeBarPaint);
                         canvas.drawRoundRect(innerLifeBarLeft, innerLifeBarTop, (innerLifeBarLeft + innerLifeBarWidth),
-                                (innerLifeBarTop + innerLifeBarHeight),15,15, innerLifeBarPaint);
+                                (innerLifeBarTop + innerLifeBarHeight),12,12, innerLifeBarPaint);
                         canvas.drawRoundRect(lifeLevelBoxLeft, lifeLevelBoxTop, (lifeLevelBoxLeft + lifeLevelBoxEdgeLength),
-                                (lifeLevelBoxTop + lifeLevelBoxEdgeLength),15,15, lifeBarBoxPaint);
+                                (lifeLevelBoxTop + lifeLevelBoxEdgeLength),12,12, lifeBarBoxPaint);
                         canvas.drawText(Integer.toString(lifeLevel), (float) (lifeLevelBoxLeft + (lifeLevelBoxEdgeLength*0.25)),
                                 (lifeLevelBoxTop + lifeLevelBoxEdgeLength - 5), lifeBarBoxTextPaint);
+                        canvas.drawRoundRect(innerLifeBarProgressBarLeft,
+                                (innerLifeBarProgressBarBottom - (lifeLevelProgress * innerLifeBarProgressBarSingleBlockHeight)),
+                                (innerLifeBarProgressBarWidth + innerLifeBarProgressBarLeft), innerLifeBarProgressBarBottom,
+                                12, 12, innerLifeBarProgressBarMainPaint);
 
                         // Last is Ship
                         canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
@@ -421,11 +426,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     public void buildLifeBar()
     {
-        outerLifeBarHeight = (int) (canvas_bottom * 0.25);
-        outerLifeBarWidth = (int) (canvas_right * 0.075);
+        outerLifeBarHeight = (int) (canvas_bottom * 0.20);
+        outerLifeBarWidth = (int) (canvas_right * 0.04);
         outerLifeBarTop = (int) ((canvas_bottom*0.5) - (outerLifeBarHeight*0.5));
         outerLifeBarLeft = (int) ((canvas_right - (canvas_right*0.02)) - (outerLifeBarWidth));
-        innerLifeBarWidth = (int) (0.75 * outerLifeBarWidth);
+        innerLifeBarWidth = (int) (0.80 * outerLifeBarWidth);
         innerLifeBarLeft = (int) (outerLifeBarLeft + (0.5 * outerLifeBarWidth) - (0.5 * innerLifeBarWidth));
         lifeLevelBoxEdgeLength = innerLifeBarWidth;
         int gap = (outerLifeBarWidth - innerLifeBarWidth)/2;
@@ -434,18 +439,26 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         lifeLevelBoxLeft = innerLifeBarLeft;
         lifeLevelBoxTop = innerLifeBarTop + innerLifeBarHeight + gap;
         innerLifeBarBottom = innerLifeBarTop + innerLifeBarHeight;
+        innerLifeBarProgressBarWidth = (int) (0.82 * innerLifeBarWidth);
+        int innerGap = (int) ((innerLifeBarWidth - innerLifeBarProgressBarWidth) * 0.5);
+        innerLifeBarProgressBarLeft = innerLifeBarLeft + innerGap;
+        innerLifeBarProgressBarBottom = innerLifeBarBottom - innerGap;
+        innerLifeBarProgressBarSingleBlockHeight = ((innerLifeBarHeight - innerGap - innerGap)/10); // This 10 divides 1 Life Level into 10
         outerLifeBarPaint = new Paint();
         innerLifeBarPaint = new Paint();
         lifeBarBoxPaint = new Paint();
         lifeBarBoxTextPaint = new Paint();
-        outerLifeBarPaint.setARGB(188, 255, 229, 0);
-        innerLifeBarPaint.setARGB(222, 137, 255, 0);
-        lifeBarBoxPaint.setARGB(195, 0, 226, 255);
-        lifeBarBoxTextPaint.setARGB(220, 0, 0, 0);
+        innerLifeBarProgressBarMainPaint = new Paint();
+        outerLifeBarPaint.setARGB(80, 255, 229, 0);
+        innerLifeBarPaint.setARGB(100, 137, 255, 0);
+        lifeBarBoxPaint.setARGB(90, 0, 226, 255);
+        lifeBarBoxTextPaint.setARGB(180, 0, 0, 0);
+        innerLifeBarProgressBarMainPaint.setARGB(125, 255, 183, 177);
         outerLifeBarPaint.setAntiAlias(true);
         innerLifeBarPaint.setAntiAlias(true);
         lifeBarBoxPaint.setAntiAlias(true);
         lifeBarBoxTextPaint.setAntiAlias(true);
+        innerLifeBarProgressBarMainPaint.setAntiAlias(true);
         lifeBarBoxTextPaint.setTextSize(lifeLevelBoxEdgeLength);
     }
 
