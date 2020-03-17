@@ -15,6 +15,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
+import org.jetbrains.annotations.NotNull;
+
 
 /* It is important to understand which method is called when.
 
@@ -44,6 +46,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public Context context;
     public boolean firstTimeCreationOfSurface = true;
     public final String TAG = "MY DEBUG TAG";
+    public WindowManager windowManager;
+    public DisplayMetrics metrics;
 
 
     ///// Below are Drawing related variables
@@ -80,10 +84,14 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public Paint outerLifeBarPaint, innerLifeBarPaint, lifeBarBoxPaint, lifeBarBoxTextPaint, innerLifeBarProgressBarMainPaint;
     /////
 
+    ///// Regarding Enemies
+    public EnemyObjectHashMap enemyHashMap = null;
+    /////
+
     // constructor
-    public GamePlayView(Context context, AttributeSet attrs)
+    public GamePlayView(Context context)
     {
-        super(context, attrs);
+        super(context);
         this.context = context;
         holder = getHolder();
         holder.addCallback(this);
@@ -110,12 +118,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                     currentFriendlyBulletName, 10, 30, 0,
                     0, 0, 200);
             currentBackgroundName = GamePlay_Activity.getBackgroundName();
-            Log.e(TAG, "surfaceCreated: " + currentBackgroundName);
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(),
                     getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             currentShipImage = currentShip.getShipImage();
-            DisplayMetrics metrics = new DisplayMetrics();
-            WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            metrics = new DisplayMetrics();
+            windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             assert windowManager != null;
             windowManager.getDefaultDisplay().getMetrics(metrics);
             if (metrics.heightPixels >= canvas_bottom) {
@@ -358,8 +365,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         float heightRatio = (float) originalHeight/canvas_bottom;
         float widthRatio = (float) originalWidth/canvas_right;
 
-        Log.e(TAG, "originalHeight = " + originalHeight + " originalWidth = " + originalWidth + " CanvasHeight X CanvasWidth = " + canvas_bottom + "X" + canvas_right);
-
         // Below if else ladder best fits canvas into the image
         if(originalHeight >= canvas_bottom && originalWidth >= canvas_right)
         {
@@ -413,7 +418,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
 
-        Log.e(TAG, "newHeight = " + newHeight + " newWidth = " + newWidth + " top , left = " + backgroundTop + " , " + backgroundLeft);
         // Now we have new width and height and top, left co - ordinates to crop and resize image into canvas size
         currentBackgroundImage = Bitmap.createBitmap(currentBackgroundImage, (int) backgroundLeft, (int) backgroundTop, (int) newWidth, (int) newHeight);
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
@@ -468,8 +472,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         int percentageOfScreen = 15;
         float heightRequired = (float) percentageOfScreen*canvas_bottom/100;
         float widthRequired = originalWidth/(originalHeight/heightRequired);
-
-        Log.e(TAG, "newHeight = " + heightRequired + " newWidth = " + widthRequired);
         // So we'll resize the image now.
         currentShipImage = Bitmap.createScaledBitmap(currentShipImage, (int) widthRequired, (int) heightRequired, true);
     }
@@ -636,5 +638,61 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public void buildLevel2()
     {
 
+    }
+
+
+    public PreservedData getDataToBePreserved()
+    {
+        PreservedData preservedData = new PreservedData(shouldIntroduceSpaceShip, ship_left, ship_top, lifeLevel, lifeLevelProgress, canvas_right,
+                canvas_bottom, currentShip, bulletQueue, enemyHashMap);
+        try{
+            drawingActive = false;
+            while (true)
+            {
+                try
+                {
+                    drawThread.join(5000);
+                    break;
+                } catch (Exception e)
+                {
+                    // Couldn't join the thread
+                }
+            }
+            drawThread = null;
+            if(bulletBuildingThread != null)
+            {
+                shouldBuildBullets = false;
+                bulletBuildingThread.join();
+                bulletBuildingThread = null;
+            }
+            if(spaceShipIntroducingThread != null)
+            {
+                shouldIntroduceSpaceShip = false;
+                spaceShipIntroducingThread.join();
+                spaceShipIntroducingThread = null;
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "getDataToBePreserved: ", e);
+        }
+        return preservedData;
+    }
+
+    void setOldData(@NotNull Context context, @NotNull PreservedData lastPreservedData)
+    {
+        this.context = context;
+        shouldIntroduceSpaceShip = lastPreservedData.getShouldIntroduceShip();
+        ship_left = lastPreservedData.getLastShipLeft();
+        ship_top = lastPreservedData.getLastShipTop();
+        lifeLevel = lastPreservedData.getLastLifeLevel();
+        lifeLevelProgress = lastPreservedData.getLastLifeLevelProgress();
+        currentShip = lastPreservedData.getLastShipObject();
+        currentShipImage = currentShip.getShipImage();
+        //bulletQueue = null;
+        bulletQueue = lastPreservedData.getLastBulletQueue();
+        enemyHashMap = lastPreservedData.getLastEnemyObjectHashMap();
+        this.canvas_right = lastPreservedData.getLastCanvasRight();
+        this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
+        buildShip();
     }
 }

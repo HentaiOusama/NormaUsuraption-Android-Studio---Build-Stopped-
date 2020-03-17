@@ -5,12 +5,15 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class GamePlay_Activity extends AppCompatActivity {
 
     public static String currentShipName, backgroundName, currentFriendlyBulletName;
+    public boolean isFirstTime = true;
+    public PreservedData preservedData;
 
     View decorView;
     int uiOptionsForDevicesWithoutNavBar = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -20,6 +23,7 @@ public class GamePlay_Activity extends AppCompatActivity {
     MediaPlayer BG_Sound_Player;
     public boolean isMusicEnabled = true;
     public AudioManager bgAudioManager;
+    public GamePlayView gamePlayView;
 
     private AudioManager.OnAudioFocusChangeListener bgAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
@@ -47,16 +51,14 @@ public class GamePlay_Activity extends AppCompatActivity {
         }
     };
 
-    private GamePlayView gamePlayView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_play_);
 
-        gamePlayView = findViewById(R.id.gamePlaySurfaceView);
+        gamePlayView = new GamePlayView(GamePlay_Activity.this);
+        setContentView(gamePlayView);
 
         //Remove NavBar
         decorView = getWindow().getDecorView();
@@ -94,7 +96,8 @@ public class GamePlay_Activity extends AppCompatActivity {
     protected void onPause()
     {
         // stop the drawing to save cpu time
-        gamePlayView.stopDrawThread();
+        preservedData = gamePlayView.getDataToBePreserved();
+        gamePlayView = null;
         super.onPause();
         if(isMusicEnabled)
         {
@@ -108,7 +111,18 @@ public class GamePlay_Activity extends AppCompatActivity {
     {
         super.onResume();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
-        gamePlayView.startDrawThread();
+        if(!isFirstTime)
+        {
+            Log.e("New Call", "onResume: ");
+            gamePlayView = new GamePlayView(GamePlay_Activity.this);
+            gamePlayView.setOldData(GamePlay_Activity.this, preservedData);
+            setContentView(gamePlayView);
+        }
+        else
+        {
+            Log.e("Called", "onResume: ");
+            isFirstTime = false;
+        }
         if(isMusicEnabled)
         {
             BG_Sound_Player.start();
