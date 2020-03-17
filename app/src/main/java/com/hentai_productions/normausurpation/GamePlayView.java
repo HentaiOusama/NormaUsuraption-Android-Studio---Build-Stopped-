@@ -15,8 +15,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
-import java.util.Queue;
-
 
 /* It is important to understand which method is called when.
 
@@ -56,7 +54,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public int canvas_right = 0, canvas_bottom = 0;
     public ShipObject currentShip;
     public String currentShipName, currentBackgroundName, currentFriendlyBulletName;
-    public myQueue<Bullet> bulletQueue = new myQueue<Bullet>() ;
+    public myQueue<Bullet> bulletQueue = new myQueue<>() ;
     public Bullet bullet, drawBullet;
     public long frameStartTime, frameTime, previousBulletStartTime = 0, previousBulletTimeSpan;
     public boolean shouldBuildBullets = true;
@@ -597,9 +595,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                     break;
 
                 case 2:
-                    break;
-
-                case 3:
                     break;
             }
         }

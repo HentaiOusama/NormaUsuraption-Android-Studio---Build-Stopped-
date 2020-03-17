@@ -1,6 +1,7 @@
 package com.hentai_productions.normausurpation;
 import java.util.*;
 
+// T is expected to be a Bullet here
 class myQueue<T>
 {
 
@@ -20,6 +21,15 @@ class myQueue<T>
         {
             tail -= 1;
             QueueList.remove(index);
+        }
+    }
+
+    void DequeueAll()
+    {
+        while (tail >= head)
+        {
+            QueueList.remove(tail);
+            tail -= 1;
         }
     }
 

@@ -6,7 +6,8 @@ class Bullet
 {
     private Bitmap bulletImage;
     private int upSpeed, downSpeed, rightSpeed, leftSpeed;
-    private int locationTop, locationLeft;
+    private int bulletHeight, bulletWidth;
+    private int locationTop, locationBottom, locationLeft, locationRight;
     private int millisBeforeNextBullet;
 
     Bullet(Bitmap bulletImage, int upSpeed, int downSpeed, int rightSpeed, int leftSpeed, int millisBeforeNextBullet)
@@ -17,6 +18,8 @@ class Bullet
         this.rightSpeed = rightSpeed;
         this.leftSpeed = leftSpeed;
         this.millisBeforeNextBullet = millisBeforeNextBullet;
+        bulletHeight = bulletImage.getScaledHeight(bulletImage.getDensity());
+        bulletWidth = bulletImage.getScaledWidth(bulletImage.getDensity());
     }
 
     Bitmap getBulletImage()
@@ -54,14 +57,26 @@ class Bullet
         return locationLeft;
     }
 
+    int getLocationBottom()
+    {
+        return locationBottom;
+    }
+
+    int getLocationRight()
+    {
+        return locationRight;
+    }
+
     void setLocationTop(int top)
     {
         locationTop = top;
+        locationBottom = locationTop + bulletHeight;
     }
 
     void setLocationLeft(int left)
     {
         locationLeft = left;
+        locationRight = locationLeft + bulletWidth;
     }
     
     int getMillisBeforeNextBullet()
