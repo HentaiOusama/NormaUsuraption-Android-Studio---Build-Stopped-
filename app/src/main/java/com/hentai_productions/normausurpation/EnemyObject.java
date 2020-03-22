@@ -3,72 +3,134 @@ package com.hentai_productions.normausurpation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
+import org.jetbrains.annotations.NotNull;
 
-// Lot of work has to be done here. Not complete yet
 class EnemyObject
 {
-    private Bitmap enemyShipImage;
-    private Bitmap[] enemyBulletImages;
-    private int millisBeforeNextEnemyShip;
-    private int[] currentFrameNumber;
-    private int totalNumberOfFrames;
-    private int enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
-    private myQueue<Bullet> enemyBulletQueue = new myQueue<Bullet>() ;
-    private int enemyBulletQueueSize;
+    private Context context;
 
-    EnemyObject(Context context, Bitmap enemyShipImage, String enemyBulletImageName, int totalNumberOfFrames, myQueue<Bullet> enemyBulletQueue, int millisBeforeNextEnemyShip)
+    // Enemy ship related variables
+    private Bitmap enemyShipImage;
+    private int enemyShipTop, enemyShipLeft, enemyShipBottom, enemyShipRight;
+    private int enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
+
+    // Enemy bullet related variables
+    private String enemyBulletImageName;
+    private int totalNumberOfFrames;
+    private int enemyBulletFrameType; // 1 = looping and 2 = non Looping
+    private int enemyBulletUpSpeed, enemyBulletDownSpeed, enemyBulletRightSpeed, enemyBulletLeftSpeed;
+    private int millisBeforeNextEnemyBullet;
+    private int millisBeforeNextEnemyShip;
+    private myQueue<Bullet> enemyBulletQueue = new myQueue<>() ;
+    private Thread bulletThread;
+    private boolean shouldBuildEnemyBullets = false;
+    private Bullet tempBullet;
+    private long previousBulletStartTime, previousBulletTimeSpan;
+
+
+    private String TAG = "MY DEBUG TAG";
+
+
+    // Constructor
+    EnemyObject(Context context, @NotNull Bitmap enemyShipImage, int enemyShipTop, int enemyShipLeft, String enemyBulletImageName,
+                int totalNumberOfFrames, int enemyBulletFrameType, int enemyBulletUpSpeed, int enemyBulletDownSpeed,
+                int enemyBulletRightSpeed, int enemyBulletLeftSpeed, int millisBeforeNextEnemyBullet, int millisBeforeNextEnemyShip)
     {
+        this.context = context;
+        this.enemyShipImage = enemyShipImage;
+        this.enemyShipTop = enemyShipTop;
+        this.enemyShipLeft = enemyShipLeft;
+        this.enemyBulletImageName = enemyBulletImageName;
         this.totalNumberOfFrames = totalNumberOfFrames;
-        enemyBulletImages = new Bitmap[totalNumberOfFrames];
-        for(int i = 0; i < totalNumberOfFrames; i++)
-        {
-            enemyBulletImages[i] = BitmapFactory.decodeResource(context.getResources(),
-                    context.getResources().getIdentifier(enemyBulletImageName + i,
-                            "drawable", context.getPackageName()));
-        }
+        this.enemyBulletFrameType = enemyBulletFrameType;
+        this.enemyBulletUpSpeed = enemyBulletUpSpeed;
+        this.enemyBulletDownSpeed = enemyBulletDownSpeed;
+        this.enemyBulletRightSpeed = enemyBulletRightSpeed;
+        this.enemyBulletLeftSpeed = enemyBulletLeftSpeed;
+        this.millisBeforeNextEnemyBullet = millisBeforeNextEnemyBullet;
+        this.millisBeforeNextEnemyShip = millisBeforeNextEnemyShip;
         enemyShipHeight = enemyShipImage.getScaledHeight(enemyShipImage.getDensity());
         enemyShipWidth = enemyShipImage.getScaledWidth(enemyShipImage.getDensity());
-        enemyBulletHeight = enemyBulletImages[0].getScaledHeight(enemyBulletImages[0].getDensity());
-        enemyBulletWidth = enemyBulletImages[0].getScaledWidth(enemyBulletImages[0].getDensity());
-        this.enemyShipImage = enemyShipImage;
-        this.enemyBulletQueue = enemyBulletQueue;
-        this.millisBeforeNextEnemyShip = millisBeforeNextEnemyShip;
-        enemyBulletQueueSize = enemyBulletQueue.getSize();
-        currentFrameNumber = new int[enemyBulletQueueSize];
-        for (int i = 0; i < enemyBulletQueueSize; i++)
-        {
-            currentFrameNumber[i] = -1;
-        }
+        enemyShipBottom = this.enemyShipTop + enemyShipHeight;
+        enemyShipRight = this.enemyShipLeft + enemyShipWidth;
+        makeBulletTread();
     }
 
+
+
+    // Ship related methods
     Bitmap getEnemyShipImage()
     {
         return enemyShipImage;
     }
 
+    int getEnemyShipTop()
+    {
+        return enemyShipTop;
+    }
+
+    int getEnemyShipLeft()
+    {
+        return enemyShipLeft;
+    }
+
+    int getEnemyShipBottom()
+    {
+        return enemyShipTop;
+    }
+
+    int getEnemyShipRight()
+    {
+        return enemyShipLeft;
+    }
+
+    int getEnemyShipHeight()
+    {
+        return enemyShipHeight;
+    }
+
+    int getEnemyShipWidth()
+    {
+        return enemyShipWidth;
+    }
+
+    int getEnemyBulletHeight()
+    {
+        return enemyBulletHeight;
+    }
+
+    int getEnemyBulletWidth()
+    {
+        return enemyBulletWidth;
+    }
+
+    void setEnemyShipTop(int enemyShipTop) {
+        this.enemyShipTop = enemyShipTop;
+        enemyShipBottom = this.enemyShipTop + enemyShipHeight;
+    }
+
+    void setEnemyShipLeft(int enemyShipLeft) {
+        this.enemyShipLeft = enemyShipLeft;
+        enemyShipRight = this.enemyShipLeft + enemyShipWidth;
+    }
+
+    int getMillisBeforeNextEnemyShip()
+    {
+        return millisBeforeNextEnemyShip;
+    }
+
+
+    
+    // Bullet related methods
     int getEnemyBulletQueueSize()
     {
-        return enemyBulletQueueSize;
+        return enemyBulletQueue.getSize();
     }
 
-    Bitmap getLoopEnemyBulletFrame(int index)
-    {
-        currentFrameNumber[index] += 1;
-        if(currentFrameNumber[index] >= totalNumberOfFrames)
-        {
-            currentFrameNumber[index] = 0;
-        }
-        return enemyBulletImages[currentFrameNumber[index]];
-    }
-
-    Bitmap getNonLoopEnemyBulletFrame(int index)
-    {
-        if(currentFrameNumber[index] != totalNumberOfFrames)
-        {
-            currentFrameNumber[index] += 1;
-        }
-        return enemyBulletImages[currentFrameNumber[index]];
+    Bitmap getEnemyBulletFrameOfBulletAtIndex(int index) {
+        return enemyBulletQueue.get(index).getBulletFrame();
     }
 
     int getEnemyBulletUpSpeed(int index)
@@ -91,33 +153,56 @@ class EnemyObject
         return enemyBulletQueue.get(index).getRightSpeed();
     }
 
-    int getMillisBeforeNextEnemyBullet(int index)
-    {
-        return enemyBulletQueue.get(index).getMillisBeforeNextBullet();
+    private void makeBulletTread() {
+        bulletThread = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                super.run();
+                double shipWidthHalf = (enemyShipImage.getScaledWidth(enemyShipImage.getDensity()) * 0.5);
+                double shipHeightHalf = (enemyShipImage.getScaledHeight(enemyShipImage.getDensity()) * 0.5);
+                double bulletWidthHalf = (enemyBulletWidth) * 0.5;
+                double bulletHeightHalf = (enemyBulletHeight) * 0.5;
+
+                do
+                {
+                    previousBulletStartTime = System.nanoTime() / 1000000 ;
+
+                    tempBullet = new Bullet(context, enemyBulletImageName, totalNumberOfFrames, enemyBulletFrameType, enemyBulletUpSpeed,
+                            enemyBulletDownSpeed, enemyBulletRightSpeed, enemyBulletLeftSpeed, millisBeforeNextEnemyBullet);
+
+                    tempBullet.setLocationLeft((int) (enemyShipLeft + shipWidthHalf - bulletWidthHalf));
+                    tempBullet.setLocationTop((int) (enemyShipTop + shipHeightHalf - bulletHeightHalf));
+                    enemyBulletQueue.Enqueue(tempBullet);
+                    previousBulletTimeSpan = (System.nanoTime() / 1000000) - previousBulletStartTime;
+                    try {
+                        Thread.sleep(millisBeforeNextEnemyBullet - previousBulletTimeSpan);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "run: ", e);
+                    }
+                }
+                while (shouldBuildEnemyBullets);
+            }
+        };
     }
 
-    int getMillisBeforeNextEnemyShip()
-    {
-        return millisBeforeNextEnemyShip;
+    void startBuildingBullets() {
+        shouldBuildEnemyBullets = true;
+        bulletThread.start();
     }
 
-    int getEnemyShipHeight()
-    {
-        return enemyShipHeight;
+    void stopBuildingBullets() {
+        shouldBuildEnemyBullets = false;
+        try {
+            bulletThread.join();
+        } catch (Exception e) {
+            Log.e(TAG, "stopBuildingBullets: ", e);
+        }
     }
 
-    int getEnemyShipWidth()
+    myQueue<Bullet> getEnemyBulletQueue()
     {
-        return enemyShipWidth;
-    }
-
-    int getEnemyBulletHeight()
-    {
-        return enemyBulletHeight;
-    }
-
-    int getEnemyBulletWidth()
-    {
-        return enemyBulletWidth;
+        return enemyBulletQueue;
     }
 }

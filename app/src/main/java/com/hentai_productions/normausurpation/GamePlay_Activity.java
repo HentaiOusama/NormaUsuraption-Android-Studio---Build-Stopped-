@@ -56,13 +56,12 @@ public class GamePlay_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        gamePlayView = new GamePlayView(GamePlay_Activity.this);
-        setContentView(gamePlayView);
-
         //Remove NavBar
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        gamePlayView = new GamePlayView(GamePlay_Activity.this);
+        setContentView(gamePlayView);
+
         currentShipName = "sp_ship_1";
         backgroundName = "level_1_background";
         currentFriendlyBulletName = "red_animated_bullet_";
@@ -113,14 +112,12 @@ public class GamePlay_Activity extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
         if(!isFirstTime)
         {
-            Log.e("New Call", "onResume: ");
             gamePlayView = new GamePlayView(GamePlay_Activity.this);
             gamePlayView.setOldData(GamePlay_Activity.this, preservedData);
             setContentView(gamePlayView);
         }
         else
         {
-            Log.e("Called", "onResume: ");
             isFirstTime = false;
         }
         if(isMusicEnabled)

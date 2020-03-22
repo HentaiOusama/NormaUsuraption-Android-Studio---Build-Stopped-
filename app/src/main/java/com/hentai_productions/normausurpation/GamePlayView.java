@@ -86,6 +86,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     ///// Regarding Enemies
     public EnemyObjectHashMap enemyHashMap = null;
+    public int enemyHashMapMaxHeightKey, enemyHashMapMaxWidthKey;
+    public myQueue<Bullet> tempEnemyBulletQueue;
     /////
 
     // constructor
@@ -115,8 +117,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             currentFriendlyBulletName = GamePlay_Activity.getCurrentFriendlyBulletName();
             currentShip = new ShipObject(context, BitmapFactory.decodeResource(getResources(),
                     getResources().getIdentifier(currentShipName, "drawable", context.getPackageName())),
-                    currentFriendlyBulletName, 10, 30, 0,
-                    0, 0, 200);
+                    currentFriendlyBulletName, 10, 10, 0,
+                    0, 0, 1500);
             currentBackgroundName = GamePlay_Activity.getBackgroundName();
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(),
                     getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
@@ -130,7 +132,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 canvas_bottom = metrics.heightPixels;
             }
             buildBackground();
-            buildShip();
+            buildShip(12);
             buildLifeBar();
             ship_width = currentShipImage.getWidth();
             ship_height = currentShipImage.getHeight();
@@ -138,6 +140,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             ship_top = canvas_bottom;
             shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
             shipMinTopAllowed = canvas_bottom-ship_height;
+            buildLevel(1);
             firstTimeCreationOfSurface = false;
         }
 
@@ -182,12 +185,16 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             canvas_right = width;
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
-            buildShip();
+            buildShip(12);
             buildLifeBar();
             ship_width = currentShipImage.getWidth();
             ship_height = currentShipImage.getHeight();
             shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
             shipMinTopAllowed = canvas_bottom-ship_height;
+            if(enemyHashMap != null)
+            {
+                enemyHashMap.changeHashMapSize(canvas_bottom, canvas_right);
+            }
         }
         // resize your UI
     }
@@ -214,6 +221,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
+    // This handles what is drawn on screen
     @Override
     public void run()
     {
@@ -236,6 +244,38 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                         // First is Background
                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
                         numberOfBullets = bulletQueue.getSize();
+
+                        // Below part draws enemy bullets and ships
+                        enemyHashMapMaxHeightKey = enemyHashMap.getMaxHeightKey();
+                        enemyHashMapMaxWidthKey = enemyHashMap.getMaxWidthKey();
+                        for(int i  = 0; i <= enemyHashMapMaxHeightKey; i++)
+                        {
+                            for(int j = 0; j <= enemyHashMapMaxHeightKey; j++)
+                            {
+                                for(int k = 0; k <= enemyHashMapMaxWidthKey; k++)
+                                {
+                                    for(int l = 0; l <= enemyHashMapMaxWidthKey; l++)
+                                    {
+                                        int lengthOfList = enemyHashMap.getEnemyObjectListSizeWithKeys(i, j, k, l);
+                                        for(int m = 0; m < lengthOfList; m++)
+                                        {
+                                            tempEnemyBulletQueue = enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyBulletQueue();
+                                            int queueSize = tempEnemyBulletQueue.getSize();
+                                            for(int n = 0; n < queueSize; n++)
+                                            {
+                                                canvas.drawBitmap(tempEnemyBulletQueue.get(n).getBulletImage(), tempEnemyBulletQueue.get(n).getLocationLeft(),
+                                                        tempEnemyBulletQueue.get(n).getLocationTop(), null);
+                                            }
+                                            canvas.drawBitmap(enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipImage(),
+                                                    enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipLeft(),
+                                                    enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipTop(), null);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // This for loop updates the position of friendly bullet
                         for(int i = 0; i < numberOfBullets; i++)
                         {
                             bullet = bulletQueue.get(i);
@@ -253,6 +293,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                 bulletQueue.setLocationLeft(i, tempBulletLeft);
                             }
                         }
+
+                        // Below loop draws the friendly bullets on screen
                         numberOfBulletsToDraw = bulletQueue.getSize();
                         for(int i = 0; i < numberOfBulletsToDraw; i++)
                         {
@@ -287,7 +329,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
                 // calculate the time required to draw the frame in ms
                 frameTime = (System.nanoTime() - frameStartTime) / 1000000;
-
+                Log.e(TAG, "run: " + MAX_FRAME_TIME + ", " + frameTime);
                 if (frameTime < MAX_FRAME_TIME) // faster than the max fps - limit the FPS
                 {
                     try
@@ -465,12 +507,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-    public void buildShip()
+    public void buildShip(int scaleValue)
     {
         int originalHeight = currentShipImage.getScaledHeight(currentShipImage.getDensity());
         int originalWidth = currentShipImage.getScaledWidth(currentShipImage.getDensity());
-        int percentageOfScreen = 15;
-        float heightRequired = (float) percentageOfScreen*canvas_bottom/100;
+        float heightRequired = (float) scaleValue *canvas_bottom/100;
         float widthRequired = originalWidth/(originalHeight/heightRequired);
         // So we'll resize the image now.
         currentShipImage = Bitmap.createScaledBitmap(currentShipImage, (int) widthRequired, (int) heightRequired, true);
@@ -630,7 +671,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     // Builds Level 1
     public void buildLevel1()
     {
+        enemyHashMap = new EnemyObjectHashMap(canvas_bottom, canvas_right, 50);
+        Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1");
 
+        EnemyObject tempEnemyObject = new EnemyObject(context, tempEnemyShipBitmap, currentFriendlyBulletName, 10,
+                0, 30, 0, 0, 200,
+                0, 100, 100, 1);
+        enemyHashMap.addEnemyObject(tempEnemyObject, 100, 100, 100, 100);
     }
 
 
@@ -639,7 +686,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     {
 
     }
-
 
     public PreservedData getDataToBePreserved()
     {
@@ -693,6 +739,21 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         enemyHashMap = lastPreservedData.getLastEnemyObjectHashMap();
         this.canvas_right = lastPreservedData.getLastCanvasRight();
         this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
-        buildShip();
+        buildShip(12);
+    }
+
+    Bitmap buildEnemyImage(String imageName)
+    {
+        Bitmap tempEnemyShipBitmap = BitmapFactory.decodeResource(getResources(),
+                context.getResources().getIdentifier(imageName, "drawable", context.getPackageName()));
+
+        int originalHeight = tempEnemyShipBitmap.getScaledHeight(tempEnemyShipBitmap.getDensity());
+        int originalWidth = tempEnemyShipBitmap.getScaledWidth(tempEnemyShipBitmap.getDensity());
+        int percentageOfScreen = 8;
+        float heightRequired = (float) percentageOfScreen*canvas_bottom/100;
+        float widthRequired = originalWidth/(originalHeight/heightRequired);
+        // So we'll resize the image now.
+        tempEnemyShipBitmap = Bitmap.createScaledBitmap(tempEnemyShipBitmap, (int) widthRequired, (int) heightRequired, true);
+        return tempEnemyShipBitmap;
     }
 }
