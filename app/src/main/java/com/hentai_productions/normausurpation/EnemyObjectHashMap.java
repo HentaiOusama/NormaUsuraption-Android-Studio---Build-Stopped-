@@ -18,18 +18,18 @@ class EnemyObjectHashMap
             new HashMap<>();
     private HashMap<Integer, ArrayList<EnemyObject>> tempEnemyObjectHashMapRight = new HashMap<>();
     private int maxHeightKey, maxWidthKey;
-    private int bulletTop, bulletLeft, bulletRight, bulletBottom;
+    private float bulletTop, bulletLeft, bulletRight, bulletBottom;
     public int bulletTopKey, bulletLeftKey, bulletRightKey, bulletBottomKey;
     private ArrayList<EnemyObject> tempArrayList;
     private int listLength;
     private EnemyObject tempEnemyObject;
     private int enemyCount = 0;
 
-    EnemyObjectHashMap(int maxHeight, int maxWidth, int scaleValue)
+    EnemyObjectHashMap(float maxHeight, float maxWidth, int scaleValue)
     {
         this.scaleValue = scaleValue;
-        maxHeightKey = maxHeight/scaleValue;
-        maxWidthKey = maxWidth/scaleValue;
+        maxHeightKey = (int) (maxHeight/scaleValue);
+        maxWidthKey = (int) (maxWidth/scaleValue);
 
         for(int i = 0; i <= maxHeightKey; i++)
         {
@@ -53,12 +53,12 @@ class EnemyObjectHashMap
         }
     }
 
-    void addEnemyObject(EnemyObject enemyObject, int enemyObjectTop, int enemyObjectBottom, int enemyObjectLeft, int enemyObjectRight)
+    void addEnemyObject(EnemyObject enemyObject, float enemyObjectTop, float enemyObjectBottom, float enemyObjectLeft, float enemyObjectRight)
     {
-        int topKey = enemyObjectTop/scaleValue;
-        int bottomKey = enemyObjectBottom/scaleValue;
-        int leftKey = enemyObjectLeft/scaleValue;
-        int rightKey = enemyObjectRight/scaleValue;
+        int topKey = (int) (enemyObjectTop/scaleValue);
+        int bottomKey = (int) (enemyObjectBottom/scaleValue);
+        int leftKey = (int) (enemyObjectLeft/scaleValue);
+        int rightKey = (int) (enemyObjectRight/scaleValue);
         ((((enemyObjectHashMap.get(topKey)).get(bottomKey)).get(leftKey)).get(rightKey)).add(enemyObject);
         enemyCount++;
     }
@@ -147,10 +147,10 @@ class EnemyObjectHashMap
         bulletLeft = bullet.getLocationLeft();
         bulletRight = bullet.getLocationRight();
         bulletBottom = bullet.getLocationBottom();
-        bulletTopKey = bulletTop/scaleValue;
-        bulletBottomKey = bulletBottom/scaleValue;
-        bulletLeftKey = bulletLeft/scaleValue;
-        bulletRightKey = bulletRight/scaleValue;
+        bulletTopKey = (int) (bulletTop/scaleValue);
+        bulletBottomKey = (int) (bulletBottom/scaleValue);
+        bulletLeftKey = (int) (bulletLeft/scaleValue);
+        bulletRightKey = (int) (bulletRight/scaleValue);
 
         for(int i = 0; i <= bulletBottomKey; i++)
         {

@@ -36,54 +36,62 @@ import org.jetbrains.annotations.NotNull;
 
 public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener, Runnable
 {
-
+    public Context context;
     private SurfaceHolder holder; //Holds the surface frame
     private Thread drawThread; // Draw Thread
     private boolean surfaceReady = false; // True when the surface is ready to draw
     private boolean drawingActive = false; // Drawing thread flag
     public Paint samplePaint = new Paint(); // Paint For drawing the sample shape
-    private static final int MAX_FRAME_TIME = (int) (1000.0 / 60.0); // Time per frame for 60 FPS
-    public Context context;
+    private static int FPS = 60; // Default FPS
+    private static final int MAX_FRAME_TIME = (int) (1000.0 / FPS); // Time per frame
     public boolean firstTimeCreationOfSurface = true;
     public final String TAG = "MY DEBUG TAG";
     public WindowManager windowManager;
     public DisplayMetrics metrics;
-
-
-    ///// Below are Drawing related variables
-    public int tempShipTop = 0;
-    Bitmap currentBackgroundImage = null, currentShipImage = null;
-    float backgroundLeft = 0, backgroundTop = 0;
-    public int ship_left = 0, ship_top = 0, ship_width = 0, ship_height = 0, shipMaxTopAllowed = 0, shipMinTopAllowed = 0;
-    public int canvas_right = 0, canvas_bottom = 0;
-    public ShipObject currentShip;
-    public String currentShipName, currentBackgroundName, currentFriendlyBulletName;
-    public myQueue<Bullet> bulletQueue = new myQueue<>() ;
-    public Bullet bullet, drawBullet;
-    public long frameStartTime, frameTime, previousBulletStartTime = 0, previousBulletTimeSpan;
-    public boolean shouldBuildBullets = true;
-    /////
-
+    public float canvas_right = 0, canvas_bottom = 0;
     
-    ///// Below are game related variables
-    // Introducing Space Ship
+    
+    ///// Below are Background Related Variables
+    public String currentBackgroundName;
+    Bitmap currentBackgroundImage = null;
+    float backgroundLeft = 0, backgroundTop = 0;
+    /////
+    
+    
+    ///// Below are Friendly Ship Related Variables
+    public String currentFriendlyShipName;
+    public FriendlyShipObject currentFriendlyShip;
+    public float screenPercentageForMovementOfShip = (float) 0.35;
+    public float shipMaxTopAllowed = 0, shipMinTopAllowed = 0;
+    public float tempShipTop = 0;
+    // For Introducing Space Ship
     public boolean shouldIntroduceSpaceShip = true;
     public Thread spaceShipIntroducingThread = null;
     public boolean introducingSpaceShip = false;
+    /////
 
-    // Regarding Bullets
-    public Thread bulletBuildingThread = null;
-    public int numberOfBullets = 0, tempBulletTop, tempBulletLeft, numberOfBulletsToDraw;
 
-    //Regarding LifeBar
+    ///// Variables For Building LifeBar
     public int lifeLevel = 1, lifeLevelProgress = 8; // 1 Life Level is Distributed in 10 levels. Check buildLifeBar() function to get the line that distributes 1 level into 10
-    public int outerLifeBarTop, outerLifeBarLeft, outerLifeBarHeight, outerLifeBarWidth, innerLifeBarTop,
+    public float outerLifeBarTop, outerLifeBarLeft, outerLifeBarHeight, outerLifeBarWidth, innerLifeBarTop,
             innerLifeBarLeft, innerLifeBarHeight, innerLifeBarWidth, lifeLevelBoxTop, lifeLevelBoxLeft,
             lifeLevelBoxEdgeLength, innerLifeBarBottom, innerLifeBarProgressBarLeft, innerLifeBarProgressBarWidth,
             innerLifeBarProgressBarSingleBlockHeight, innerLifeBarProgressBarBottom;
     public Paint outerLifeBarPaint, innerLifeBarPaint, lifeBarBoxPaint, lifeBarBoxTextPaint, innerLifeBarProgressBarMainPaint;
     /////
+    
+    
+    
+    ///// Below are Variables regarding Friendly Bullets
+    public String currentFriendlyBulletName;
+    public myQueue<Bullet> friendlyBulletQueue = new myQueue<>();
+    public Bullet drawBullet;
+    public long frameStartTime, frameTime;
+    public int numberOfBulletsToDraw;
+    //////
 
+    
+    
     ///// Regarding Enemies
     public EnemyObjectHashMap enemyHashMap = null;
     public int enemyHashMapMaxHeightKey, enemyHashMapMaxWidthKey;
@@ -107,22 +115,12 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public void surfaceCreated(SurfaceHolder holder)
     {
         this.holder = holder;
-        
         /* Gets the name of background and Image from the activity_game_play and then builds the background
          * as per our needs but these things in the if only needs to be done once. Outside this might be needed to everytime the surface is created.
          * Say when the app is opened again from recent.*/
         if(firstTimeCreationOfSurface)
         {
-            currentShipName = GamePlay_Activity.getCurrentShipName();
-            currentFriendlyBulletName = GamePlay_Activity.getCurrentFriendlyBulletName();
-            currentShip = new ShipObject(context, BitmapFactory.decodeResource(getResources(),
-                    getResources().getIdentifier(currentShipName, "drawable", context.getPackageName())),
-                    currentFriendlyBulletName, 10, 10, 0,
-                    0, 0, 1500);
-            currentBackgroundName = GamePlay_Activity.getBackgroundName();
-            currentBackgroundImage = BitmapFactory.decodeResource(getResources(),
-                    getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
-            currentShipImage = currentShip.getShipImage();
+            // Gets Window Details
             metrics = new DisplayMetrics();
             windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             assert windowManager != null;
@@ -131,21 +129,34 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 canvas_right = metrics.widthPixels;
                 canvas_bottom = metrics.heightPixels;
             }
+            
+            // Gets and Builds Background
+            currentBackgroundName = GamePlay_Activity.getBackgroundName();
+            currentBackgroundImage = BitmapFactory.decodeResource(getResources(),
+                    getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
+            currentFriendlyBulletName = GamePlay_Activity.getCurrentFriendlyBulletName();
+            
+            // Gets and Builds Space Ship
+            currentFriendlyShipName = GamePlay_Activity.getCurrentShipName();
+            currentFriendlyShip = new FriendlyShipObject(context, BitmapFactory.decodeResource(getResources(),
+                    getResources().getIdentifier(currentFriendlyShipName, "drawable", context.getPackageName())),
+                    lifeLevel, 0, 0, currentFriendlyBulletName, 10, 1,
+                    35, 0, 0, 0, 400,
+                    FPS);
+            
+            // Below Sets Positions and Limits for friendly Ship
             buildBackground();
-            buildShip(12);
+            buildShip(13);
             buildLifeBar();
-            ship_width = currentShipImage.getWidth();
-            ship_height = currentShipImage.getHeight();
-            ship_left = (canvas_right/2) - (ship_width/2);
-            ship_top = canvas_bottom;
-            shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
-            shipMinTopAllowed = canvas_bottom-ship_height;
+            shipMaxTopAllowed = canvas_bottom - ((int) ((screenPercentageForMovementOfShip*canvas_bottom) + (currentFriendlyShip.getFriendlyShipHeight() / 2)));
+            shipMinTopAllowed = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
+            currentFriendlyShip.setFriendlyShipLeft((canvas_right/2) - (currentFriendlyShip.getFriendlyShipWidth()/2));
+            currentFriendlyShip.setFriendlyShipTop(canvas_bottom);
             buildLevel(1);
             firstTimeCreationOfSurface = false;
         }
 
         surfaceReady = true;
-        
         if(shouldIntroduceSpaceShip || introducingSpaceShip)
         {
             if(spaceShipIntroducingThread != null)
@@ -166,11 +177,10 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 drawingActive = false;
                 try {
                     drawThread.join();
-                    bulletBuildingThread.join();
                 } catch (InterruptedException e) { // do nothing
                 }
             }
-            ship_top = canvas_bottom - ship_height;
+            currentFriendlyShip.setFriendlyShipTop(canvas_bottom - currentFriendlyShip.getFriendlyShipHeight());
             startDrawThread();
         }
     }
@@ -185,66 +195,70 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             canvas_right = width;
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
-            buildShip(12);
+            buildShip(13);
             buildLifeBar();
-            ship_width = currentShipImage.getWidth();
-            ship_height = currentShipImage.getHeight();
-            shipMaxTopAllowed = canvas_bottom - ((int) ((0.28*canvas_bottom) + (ship_height / 2)));
-            shipMinTopAllowed = canvas_bottom-ship_height;
+            shipMaxTopAllowed = canvas_bottom - ((int) ((screenPercentageForMovementOfShip*canvas_bottom) + (currentFriendlyShip.getFriendlyShipHeight() / 2)));
+            shipMinTopAllowed = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
             if(enemyHashMap != null)
             {
-                enemyHashMap.changeHashMapSize(canvas_bottom, canvas_right);
+                enemyHashMap.changeHashMapSize((int) canvas_bottom,(int) canvas_right);
             }
         }
-        // resize your UI
     }
 
 
     @Override
-    public boolean onTouch(View v, MotionEvent event)
+    public boolean onTouch(View v, @NotNull MotionEvent event)
     {
         // Handle touch events
-        Point point = new Point();
-        point.x = (int) event.getX();
-        point.y = (int) event.getY();
-        ship_left = point.x - (ship_width/2);
-        tempShipTop = point.y - (3*ship_height/4);
+        currentFriendlyShip.setFriendlyShipLeft(event.getX() - (currentFriendlyShip.getFriendlyShipWidth()/2));
+        tempShipTop = event.getY() - (3*currentFriendlyShip.getFriendlyShipHeight()/4);
         if(tempShipTop <= shipMaxTopAllowed)
         {
-            ship_top = shipMaxTopAllowed;
+            currentFriendlyShip.setFriendlyShipTop(shipMaxTopAllowed);
         }
         else
         {
-            ship_top = Math.min(tempShipTop, shipMinTopAllowed);
+            currentFriendlyShip.setFriendlyShipTop(Math.min(tempShipTop, shipMinTopAllowed));
         }
         return true;
     }
 
-
+    
+    // To be Modified as per new changes
     // This handles what is drawn on screen
     @Override
     public void run()
     {
-        try
-        {
-            while (drawingActive)
+        if(spaceShipIntroducingThread != null) {
+            introducingSpaceShip = false;
+            shouldIntroduceSpaceShip = false;
+            while (true)
             {
-                if (holder == null)
+                try
                 {
+                    spaceShipIntroducingThread.join(500);
+                    break;
+                } catch (Exception e)
+                {
+                    Log.e(TAG, "run: Not able to Join", e);
+                }
+            }
+            spaceShipIntroducingThread = null;
+        }
+        try {
+            while (drawingActive) {
+                if (holder == null) {
                     return;
                 }
-
                 frameStartTime = System.nanoTime();
                 Canvas canvas = holder.lockCanvas();
-                if (canvas != null)
-                {
-                    try
-                    {
-                        // Your drawing here
+                if (canvas != null) {
+                    try {
                         // First is Background
                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
-                        numberOfBullets = bulletQueue.getSize();
 
+                        /*
                         // Below part draws enemy bullets and ships
                         enemyHashMapMaxHeightKey = enemyHashMap.getMaxHeightKey();
                         enemyHashMapMaxWidthKey = enemyHashMap.getMaxWidthKey();
@@ -263,7 +277,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                             int queueSize = tempEnemyBulletQueue.getSize();
                                             for(int n = 0; n < queueSize; n++)
                                             {
-                                                canvas.drawBitmap(tempEnemyBulletQueue.get(n).getBulletImage(), tempEnemyBulletQueue.get(n).getLocationLeft(),
+                                                canvas.drawBitmap(tempEnemyBulletQueue.get(n).getBulletFrame(), 
+                                                        tempEnemyBulletQueue.get(n).getLocationLeft(),
                                                         tempEnemyBulletQueue.get(n).getLocationTop(), null);
                                             }
                                             canvas.drawBitmap(enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipImage(),
@@ -274,33 +289,19 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                 }
                             }
                         }
-
-                        // This for loop updates the position of friendly bullet
-                        for(int i = 0; i < numberOfBullets; i++)
-                        {
-                            bullet = bulletQueue.get(i);
-                            tempBulletLeft = bullet.getLocationLeft() + bullet.getRightSpeed() - bullet.getLeftSpeed();
-                            tempBulletTop = (bullet.getLocationTop()) - bullet.getUpSpeed() + bullet.getDownSpeed();
-                            if(tempBulletTop <= 0 || tempBulletTop >= canvas_bottom || tempBulletLeft <= 0 || tempBulletLeft >= canvas_right)
-                            {
-                                bulletQueue.Dequeue(i);
-                                numberOfBullets -= 1;
-                                i -= 1;
-                            }
-                            else
-                            {
-                                bulletQueue.setLocationTop(i, tempBulletTop);
-                                bulletQueue.setLocationLeft(i, tempBulletLeft);
-                            }
-                        }
+                         */
 
                         // Below loop draws the friendly bullets on screen
-                        numberOfBulletsToDraw = bulletQueue.getSize();
-                        for(int i = 0; i < numberOfBulletsToDraw; i++)
+                        friendlyBulletQueue = currentFriendlyShip.getFriendlyBulletQueue();
+                        for(int i = 0; i < currentFriendlyShip.getFriendlyBulletQueueSize(); i++)
                         {
-                            drawBullet = bulletQueue.get(i);
-                            canvas.drawBitmap(drawBullet.getBulletImage(), drawBullet.getLocationLeft(), drawBullet.getLocationTop(), null);
+                            Log.e(TAG, "run: drawingBullets on Canvas");
+                            drawBullet = friendlyBulletQueue.get(i);
+                            canvas.drawBitmap(currentFriendlyShip.getFriendlyBulletFrameOfBulletAtIndex(i),
+                                    drawBullet.getLocationLeft(), drawBullet.getLocationTop(), null);
                         }
+
+                        currentFriendlyShip.updateBulletPositions();
 
                         // Second Last is Life Bar
                         canvas.drawRoundRect(outerLifeBarLeft, outerLifeBarTop, (outerLifeBarLeft + outerLifeBarWidth),
@@ -317,34 +318,28 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                 12, 12, innerLifeBarProgressBarMainPaint);
 
                         // Last is Ship
-                        canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
+                        canvas.drawBitmap(currentFriendlyShip.getFriendlyShipImage(), currentFriendlyShip.getFriendlyShipLeft(), 
+                                currentFriendlyShip.getFriendlyShipTop(), null);
 
                     }
-                    finally
-                    {
-
+                    finally {
                         holder.unlockCanvasAndPost(canvas);
                     }
                 }
-
                 // calculate the time required to draw the frame in ms
                 frameTime = (System.nanoTime() - frameStartTime) / 1000000;
-                Log.e(TAG, "run: " + MAX_FRAME_TIME + ", " + frameTime);
-                if (frameTime < MAX_FRAME_TIME) // faster than the max fps - limit the FPS
-                {
-                    try
-                    {
+                // If faster than the max fps -> limit the FPS
+                if (frameTime < MAX_FRAME_TIME) {
+                    try {
                         Thread.sleep(MAX_FRAME_TIME - frameTime);
-                    } catch (InterruptedException e)
-                    {
-                        // ignore
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "run: FPS :- ", e);
                     }
                 }
             }
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        catch (Exception e) {
+            Log.e(TAG, "run: ", e);
         }
     }
 
@@ -352,36 +347,50 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        stopDrawThread();
+        stopAllThreads();
         holder.getSurface().release();
         this.holder = null;
         surfaceReady = false;
     }
 
 
-    // Stops the drawing thread
-    public void stopDrawThread()
+    // Stops all threads
+    public void stopAllThreads()
     {
-        if (drawThread == null)
+        if (drawThread != null)
         {
-            spaceShipIntroducingThread = null;
-            return;
-        }
-        drawingActive = false;
-        while (true)
-        {
-            try
+            drawingActive = false;
+            while (true)
             {
-                drawThread.join(5000);
-                break;
-            } catch (Exception e)
-            {
-                // Couldn't join the thread
+                try
+                {
+                    drawThread.join(5000);
+                    break;
+                } catch (Exception e)
+                {
+                    // Couldn't join the thread
+                }
             }
+            drawThread = null;
         }
-        drawThread = null;
-        bulletBuildingThread = null;
-        spaceShipIntroducingThread = null;
+        if(spaceShipIntroducingThread != null)
+        {
+            introducingSpaceShip = false;
+            shouldIntroduceSpaceShip = false;
+            while (true)
+            {
+                try
+                {
+                    spaceShipIntroducingThread.join(5000);
+                    break;
+                } catch (Exception e)
+                {
+                    // Couldn't join the thread
+                }
+            }
+            spaceShipIntroducingThread = null;
+        }
+        currentFriendlyShip.stopBuildingBullets();
     }
 
 
@@ -392,8 +401,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         {
             drawThread = new Thread(this, "Draw thread");
             drawingActive = true;
+            buildBullets();
             drawThread.start();
-            buildBullets(lifeLevel);
         }
     }
 
@@ -404,8 +413,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         float newHeight, newWidth;
         int originalHeight = currentBackgroundImage.getScaledHeight(currentBackgroundImage.getDensity());
         int originalWidth = currentBackgroundImage.getScaledWidth(currentBackgroundImage.getDensity());
-        float heightRatio = (float) originalHeight/canvas_bottom;
-        float widthRatio = (float) originalWidth/canvas_right;
+        float heightRatio = originalHeight/canvas_bottom;
+        float widthRatio = originalWidth/canvas_right;
 
         // Below if else ladder best fits canvas into the image
         if(originalHeight >= canvas_bottom && originalWidth >= canvas_right)
@@ -461,30 +470,31 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         }
 
         // Now we have new width and height and top, left co - ordinates to crop and resize image into canvas size
-        currentBackgroundImage = Bitmap.createBitmap(currentBackgroundImage, (int) backgroundLeft, (int) backgroundTop, (int) newWidth, (int) newHeight);
+        currentBackgroundImage = Bitmap.createBitmap(currentBackgroundImage, (int) backgroundLeft, (int) backgroundTop, 
+                (int) newWidth, (int) newHeight);
         // Now aspect ratio of currentBackgroundImage is same as our canvas but actual dimensions may be larger or smaller
         // So we'll resize the image now. Above only cropped it.
-        currentBackgroundImage = Bitmap.createScaledBitmap(currentBackgroundImage, canvas_right, canvas_bottom, true);
+        currentBackgroundImage = Bitmap.createScaledBitmap(currentBackgroundImage, (int) canvas_right, (int) canvas_bottom, true);
     }
 
 
     public void buildLifeBar()
     {
-        outerLifeBarHeight = (int) (canvas_bottom * 0.20);
-        outerLifeBarWidth = (int) (canvas_right * 0.04);
-        outerLifeBarTop = (int) ((canvas_bottom*0.5) - (outerLifeBarHeight*0.5));
-        outerLifeBarLeft = (int) ((canvas_right - (canvas_right*0.02)) - (outerLifeBarWidth));
-        innerLifeBarWidth = (int) (0.80 * outerLifeBarWidth);
-        innerLifeBarLeft = (int) (outerLifeBarLeft + (0.5 * outerLifeBarWidth) - (0.5 * innerLifeBarWidth));
+        outerLifeBarHeight = (float) (canvas_bottom * 0.20);
+        outerLifeBarWidth = (float) (canvas_right * 0.04);
+        outerLifeBarTop = (float) ((canvas_bottom*0.5) - (outerLifeBarHeight*0.5));
+        outerLifeBarLeft = (float) ((canvas_right - (canvas_right*0.02)) - (outerLifeBarWidth));
+        innerLifeBarWidth = (float) (0.80 * outerLifeBarWidth);
+        innerLifeBarLeft = (float) (outerLifeBarLeft + (0.5 * outerLifeBarWidth) - (0.5 * innerLifeBarWidth));
         lifeLevelBoxEdgeLength = innerLifeBarWidth;
-        int gap = (outerLifeBarWidth - innerLifeBarWidth)/2;
+        float gap = (outerLifeBarWidth - innerLifeBarWidth)/2;
         innerLifeBarTop = outerLifeBarTop + gap;
         innerLifeBarHeight = outerLifeBarHeight - lifeLevelBoxEdgeLength - gap - gap - gap;
         lifeLevelBoxLeft = innerLifeBarLeft;
         lifeLevelBoxTop = innerLifeBarTop + innerLifeBarHeight + gap;
         innerLifeBarBottom = innerLifeBarTop + innerLifeBarHeight;
-        innerLifeBarProgressBarWidth = (int) (0.82 * innerLifeBarWidth);
-        int innerGap = (int) ((innerLifeBarWidth - innerLifeBarProgressBarWidth) * 0.5);
+        innerLifeBarProgressBarWidth = (float) (0.82 * innerLifeBarWidth);
+        float innerGap = (float) ((innerLifeBarWidth - innerLifeBarProgressBarWidth) * 0.5);
         innerLifeBarProgressBarLeft = innerLifeBarLeft + innerGap;
         innerLifeBarProgressBarBottom = innerLifeBarBottom - innerGap;
         innerLifeBarProgressBarSingleBlockHeight = ((innerLifeBarHeight - innerGap - innerGap)/10); // This 10 divides 1 Life Level into 10
@@ -509,12 +519,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     public void buildShip(int scaleValue)
     {
-        int originalHeight = currentShipImage.getScaledHeight(currentShipImage.getDensity());
-        int originalWidth = currentShipImage.getScaledWidth(currentShipImage.getDensity());
-        float heightRequired = (float) scaleValue *canvas_bottom/100;
+        float originalHeight = currentFriendlyShip.getFriendlyShipImage().getScaledHeight(currentFriendlyShip.getFriendlyShipImage().getDensity());
+        float originalWidth = currentFriendlyShip.getFriendlyShipImage().getScaledWidth(currentFriendlyShip.getFriendlyShipImage().getDensity());
+        float heightRequired = (scaleValue * canvas_bottom/100);
         float widthRequired = originalWidth/(originalHeight/heightRequired);
         // So we'll resize the image now.
-        currentShipImage = Bitmap.createScaledBitmap(currentShipImage, (int) widthRequired, (int) heightRequired, true);
+        currentFriendlyShip.setFriendlyShipImage(Bitmap.createScaledBitmap(currentFriendlyShip.getFriendlyShipImage(), 
+                (int) widthRequired, (int) heightRequired, true));
     }
 
     
@@ -529,11 +540,13 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 public void run()
                 {
                     super.run();
-
                     long frameStartTime;
                     long frameTime;
                     try
                     {
+                        Bitmap currentFriendlyShipImage = currentFriendlyShip.getFriendlyShipImage();
+                        float ship_left = currentFriendlyShip.getFriendlyShipLeft();
+                        float ship_top = currentFriendlyShip.getFriendlyShipTop();
                         while (introducingSpaceShip)
                         {
                             if (holder == null)
@@ -545,27 +558,25 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                             Canvas canvas = holder.lockCanvas();
                             if (canvas != null)
                             {
-                                // clear the screen using black
                                 canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
                                 try
                                 {
-                                    // Your drawing here
-                                    canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
-                                    ship_top -= 7;
-                                    if(ship_top + ship_height <= canvas_bottom)
+                                    canvas.drawBitmap(currentFriendlyShipImage, ship_left, ship_top, null);
+                                    ship_top -= 4;
+                                    if(ship_top + currentFriendlyShip.getFriendlyShipHeight() <= canvas_bottom)
                                     {
-                                        ship_top = canvas_bottom-ship_height;
+                                        ship_top = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
                                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
-                                        canvas.drawBitmap(currentShipImage, ship_left, ship_top, null);
+                                        canvas.drawBitmap(currentFriendlyShipImage, ship_left, ship_top, null);
                                         introducingSpaceShip = false;
                                         shouldIntroduceSpaceShip = false;
-                                        spaceShipIntroducingThread = null;
+                                        currentFriendlyShip.setFriendlyShipTop(ship_top);
+                                        currentFriendlyShip.setFriendlyShipLeft(ship_left);
                                         startDrawThread();
                                     }
                                 }
                                 finally
                                 {
-
                                     holder.unlockCanvasAndPost(canvas);
                                 }
                             }
@@ -586,7 +597,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                         }
                     } catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Log.e(TAG, "introduceSpaceShip -> run: ", e);
                     }
                 }
             };
@@ -597,55 +608,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     // Builds Bullets
-    public void buildBullets(int lifeLevel)
-    {
-        if(shouldBuildBullets && bulletBuildingThread == null)
-        {
-            switch (lifeLevel)
-            {
-                case 1 :
-                    bulletBuildingThread = new Thread("Bullets Building Thread")
-                    {
-                        @Override
-                        public void run() {
-                            super.run();
-
-                            double shipWidthHalf = (currentShipImage.getScaledWidth(currentShipImage.getDensity()) * 0.5);
-                            double shipHeightHalf = (currentShipImage.getScaledHeight(currentShipImage.getDensity()) * 0.5);
-                            double bulletWidthHalf = (currentShip.getBulletWidth()) * 0.5;
-                            double bulletHeightHalf = (currentShip.getBulletHeight()) * 0.5;
-
-                            do
-                            {
-                                previousBulletStartTime = System.nanoTime() / 1000000 ;
-                                bullet = new Bullet(currentShip.getLoopBulletFrame(), currentShip.getBulletUpSpeed(), currentShip.getBulletDownSpeed(),
-                                        currentShip.getBulletRightSpeed(), currentShip.getBulletLeftSpeed(), currentShip.getMillisBeforeNextBullet());
-
-                                bullet.setLocationLeft((int) (ship_left + shipWidthHalf - bulletWidthHalf));
-                                bullet.setLocationTop((int) (ship_top + shipHeightHalf - bulletHeightHalf));
-                                bulletQueue.Enqueue(bullet);
-                                previousBulletTimeSpan = (System.nanoTime() / 1000000) - previousBulletStartTime;
-                                try {
-                                    Thread.sleep(bullet.getMillisBeforeNextBullet() - previousBulletTimeSpan);
-                                } catch (InterruptedException e) {
-                                    Log.e(TAG, "run: ", e);
-                                }
-                            }
-                            while (shouldBuildBullets);
-                        }
-                    };
-                    bulletBuildingThread.start();
-                    break;
-
-                case 2:
-                    break;
-            }
-        }
-        else if (bulletBuildingThread != null && shouldBuildBullets)
-        {
-            bulletBuildingThread = null;
-            buildBullets(lifeLevel);
-        }
+    public void buildBullets()
+    { 
+        currentFriendlyShip.startBuildingBullets(canvas_bottom, canvas_right);
     }
 
 
@@ -674,8 +639,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         enemyHashMap = new EnemyObjectHashMap(canvas_bottom, canvas_right, 50);
         Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1");
 
-        EnemyObject tempEnemyObject = new EnemyObject(context, tempEnemyShipBitmap, currentFriendlyBulletName, 10,
-                0, 30, 0, 0, 200,
+        EnemyObject tempEnemyObject = new EnemyObject(context, tempEnemyShipBitmap, 100, 100,
+                currentFriendlyBulletName, 30, 0, 0, 200,
                 0, 100, 100, 1);
         enemyHashMap.addEnemyObject(tempEnemyObject, 100, 100, 100, 100);
     }
@@ -689,38 +654,9 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     public PreservedData getDataToBePreserved()
     {
-        PreservedData preservedData = new PreservedData(shouldIntroduceSpaceShip, ship_left, ship_top, lifeLevel, lifeLevelProgress, canvas_right,
-                canvas_bottom, currentShip, bulletQueue, enemyHashMap);
-        try{
-            drawingActive = false;
-            while (true)
-            {
-                try
-                {
-                    drawThread.join(5000);
-                    break;
-                } catch (Exception e)
-                {
-                    // Couldn't join the thread
-                }
-            }
-            drawThread = null;
-            if(bulletBuildingThread != null)
-            {
-                shouldBuildBullets = false;
-                bulletBuildingThread.join();
-                bulletBuildingThread = null;
-            }
-            if(spaceShipIntroducingThread != null)
-            {
-                shouldIntroduceSpaceShip = false;
-                spaceShipIntroducingThread.join();
-                spaceShipIntroducingThread = null;
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "getDataToBePreserved: ", e);
-        }
+        PreservedData preservedData = new PreservedData(shouldIntroduceSpaceShip, lifeLevelProgress, currentFriendlyShip, 
+                canvas_right, canvas_bottom, enemyHashMap);
+        stopAllThreads();
         return preservedData;
     }
 
@@ -728,18 +664,12 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     {
         this.context = context;
         shouldIntroduceSpaceShip = lastPreservedData.getShouldIntroduceShip();
-        ship_left = lastPreservedData.getLastShipLeft();
-        ship_top = lastPreservedData.getLastShipTop();
-        lifeLevel = lastPreservedData.getLastLifeLevel();
         lifeLevelProgress = lastPreservedData.getLastLifeLevelProgress();
-        currentShip = lastPreservedData.getLastShipObject();
-        currentShipImage = currentShip.getShipImage();
-        //bulletQueue = null;
-        bulletQueue = lastPreservedData.getLastBulletQueue();
+        currentFriendlyShip = lastPreservedData.getLastShipObject();
         enemyHashMap = lastPreservedData.getLastEnemyObjectHashMap();
         this.canvas_right = lastPreservedData.getLastCanvasRight();
         this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
-        buildShip(12);
+        buildShip(13);
     }
 
     Bitmap buildEnemyImage(String imageName)

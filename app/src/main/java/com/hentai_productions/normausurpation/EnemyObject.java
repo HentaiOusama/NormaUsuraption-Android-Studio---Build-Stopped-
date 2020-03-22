@@ -13,8 +13,8 @@ class EnemyObject
 
     // Enemy ship related variables
     private Bitmap enemyShipImage;
-    private int enemyShipTop, enemyShipLeft, enemyShipBottom, enemyShipRight;
-    private int enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
+    private float enemyShipTop, enemyShipLeft, enemyShipBottom, enemyShipRight;
+    private float enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
 
     // Enemy bullet related variables
     private String enemyBulletImageName;
@@ -28,13 +28,47 @@ class EnemyObject
     private boolean shouldBuildEnemyBullets = false;
     private Bullet tempBullet;
     private long previousBulletStartTime, previousBulletTimeSpan;
+    private int bulletQueueLength = 0;
+    private float tempLeft, tempTop;
 
-
+    // Misc Variables
     private String TAG = "MY DEBUG TAG";
+    private float canvas_bottom, canvas_right;
+    private Thread bulletPositionUpdatingThread = new Thread()
+    {
+        @Override
+        public void run() {
+            super.run();
+            for(int i = 0; i < bulletQueueLength; i++)
+            {
+                tempBullet = enemyBulletQueue.get(i);
+                tempTop = (tempBullet.getLocationLeft() + tempBullet.getRightSpeed() - tempBullet.getLeftSpeed());
+                tempLeft = (tempBullet.getLocationTop() - tempBullet.getUpSpeed() + tempBullet.getDownSpeed());
+
+                if(tempTop <= -5 || tempTop >= canvas_bottom)
+                {
+                    enemyBulletQueue.Dequeue(i);
+                    bulletQueueLength--;
+                    i--;
+                }
+                else if(tempLeft <= -5 || tempLeft >= canvas_right)
+                {
+                    enemyBulletQueue.Dequeue(i);
+                    bulletQueueLength--;
+                    i--;
+                }
+                else
+                {
+                    enemyBulletQueue.get(i).setLocationTop(tempTop);
+                    enemyBulletQueue.get(i).setLocationLeft(tempLeft);
+                }
+            }
+        }
+    };
 
 
     // Constructor
-    EnemyObject(Context context, @NotNull Bitmap enemyShipImage, int enemyShipTop, int enemyShipLeft, String enemyBulletImageName,
+    EnemyObject(Context context, @NotNull Bitmap enemyShipImage, float enemyShipTop, float enemyShipLeft, String enemyBulletImageName,
                 int totalNumberOfFrames, int enemyBulletFrameType, int enemyBulletUpSpeed, int enemyBulletDownSpeed,
                 int enemyBulletRightSpeed, int enemyBulletLeftSpeed, int millisBeforeNextEnemyBullet, int millisBeforeNextEnemyShip)
     {
@@ -66,52 +100,42 @@ class EnemyObject
         return enemyShipImage;
     }
 
-    int getEnemyShipTop()
+    float getEnemyShipTop()
     {
         return enemyShipTop;
     }
 
-    int getEnemyShipLeft()
+    float getEnemyShipLeft()
     {
         return enemyShipLeft;
     }
 
-    int getEnemyShipBottom()
+    float getEnemyShipBottom()
     {
         return enemyShipTop;
     }
 
-    int getEnemyShipRight()
+    float getEnemyShipRight()
     {
         return enemyShipLeft;
     }
 
-    int getEnemyShipHeight()
+    float getEnemyShipHeight()
     {
         return enemyShipHeight;
     }
 
-    int getEnemyShipWidth()
+    float getEnemyShipWidth()
     {
         return enemyShipWidth;
     }
 
-    int getEnemyBulletHeight()
-    {
-        return enemyBulletHeight;
-    }
-
-    int getEnemyBulletWidth()
-    {
-        return enemyBulletWidth;
-    }
-
-    void setEnemyShipTop(int enemyShipTop) {
+    void setEnemyShipTop(float enemyShipTop) {
         this.enemyShipTop = enemyShipTop;
         enemyShipBottom = this.enemyShipTop + enemyShipHeight;
     }
 
-    void setEnemyShipLeft(int enemyShipLeft) {
+    void setEnemyShipLeft(float enemyShipLeft) {
         this.enemyShipLeft = enemyShipLeft;
         enemyShipRight = this.enemyShipLeft + enemyShipWidth;
     }
@@ -133,24 +157,20 @@ class EnemyObject
         return enemyBulletQueue.get(index).getBulletFrame();
     }
 
-    int getEnemyBulletUpSpeed(int index)
+    float getEnemyBulletHeight()
     {
-        return enemyBulletQueue.get(index).getUpSpeed();
+        return enemyBulletHeight;
     }
 
-    int getEnemyBulletDownSpeed(int index)
+    float getEnemyBulletWidth()
     {
-        return enemyBulletQueue.get(index).getDownSpeed();
+        return enemyBulletWidth;
     }
 
-    int getEnemyBulletLeftSpeed(int index)
-    {
-        return enemyBulletQueue.get(index).getLeftSpeed();
-    }
-
-    int getEnemyBulletRightSpeed(int index)
-    {
-        return enemyBulletQueue.get(index).getRightSpeed();
+    void updateEnemyBulletPositions(float canvas_bottom, float canvas_right) {
+        this.canvas_bottom = canvas_bottom;
+        this.canvas_right = canvas_right;
+        bulletPositionUpdatingThread.start();
     }
 
     private void makeBulletTread() {
@@ -196,6 +216,7 @@ class EnemyObject
         shouldBuildEnemyBullets = false;
         try {
             bulletThread.join();
+            bulletPositionUpdatingThread.join();
         } catch (Exception e) {
             Log.e(TAG, "stopBuildingBullets: ", e);
         }

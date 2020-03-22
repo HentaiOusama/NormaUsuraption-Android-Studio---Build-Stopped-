@@ -8,8 +8,8 @@ class Bullet
 {
     private Bitmap[] bulletImages;
     private int upSpeed, downSpeed, rightSpeed, leftSpeed;
-    private int bulletHeight, bulletWidth;
-    private int locationTop, locationBottom, locationLeft, locationRight;
+    private float bulletHeight, bulletWidth;
+    private float locationTop, locationBottom, locationLeft, locationRight;
     private int millisBeforeNextBullet;
     private int currentFrameNumber = -1;
     private int totalNumberOfFrames;
@@ -90,42 +90,42 @@ class Bullet
         return rightSpeed;
     }
 
-    int getLocationTop()
+    float getLocationTop()
     {
         return locationTop;
     }
 
-    int getLocationLeft()
+    float getLocationLeft()
     {
         return locationLeft;
     }
 
-    int getLocationBottom()
+    float getLocationBottom()
     {
         return locationBottom;
     }
 
-    int getLocationRight()
+    float getLocationRight()
     {
         return locationRight;
     }
 
-    int getBulletHeight()
+    float getBulletHeight()
     {
         return bulletHeight;
     }
 
-    int getBulletWidth()
+    float getBulletWidth()
     {
         return bulletWidth;
     }
 
-    void setLocationTop(int top) {
+    void setLocationTop(float top) {
         locationTop = top;
         locationBottom = locationTop + bulletHeight;
     }
 
-    void setLocationLeft(int left) {
+    void setLocationLeft(float left) {
         locationLeft = left;
         locationRight = locationLeft + bulletWidth;
     }
