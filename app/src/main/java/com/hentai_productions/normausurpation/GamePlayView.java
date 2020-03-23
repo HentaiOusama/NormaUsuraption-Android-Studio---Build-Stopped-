@@ -87,7 +87,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public myQueue<Bullet> friendlyBulletQueue = new myQueue<>();
     public Bullet drawBullet;
     public long frameStartTime, frameTime;
-    public int numberOfBulletsToDraw;
     //////
 
     
@@ -293,15 +292,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
                         // Below loop draws the friendly bullets on screen
                         friendlyBulletQueue = currentFriendlyShip.getFriendlyBulletQueue();
-                        for(int i = 0; i < currentFriendlyShip.getFriendlyBulletQueueSize(); i++)
-                        {
-                            Log.e(TAG, "run: drawingBullets on Canvas");
+                        for(int i = 0; i < currentFriendlyShip.getFriendlyBulletQueueSize(); i++) {
                             drawBullet = friendlyBulletQueue.get(i);
                             canvas.drawBitmap(currentFriendlyShip.getFriendlyBulletFrameOfBulletAtIndex(i),
                                     drawBullet.getLocationLeft(), drawBullet.getLocationTop(), null);
                         }
-
-                        currentFriendlyShip.updateBulletPositions();
 
                         // Second Last is Life Bar
                         canvas.drawRoundRect(outerLifeBarLeft, outerLifeBarTop, (outerLifeBarLeft + outerLifeBarWidth),
@@ -328,6 +323,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 }
                 // calculate the time required to draw the frame in ms
                 frameTime = (System.nanoTime() - frameStartTime) / 1000000;
+                Log.e(TAG, "run: " + frameTime);
                 // If faster than the max fps -> limit the FPS
                 if (frameTime < MAX_FRAME_TIME) {
                     try {
@@ -652,6 +648,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     }
 
+
     public PreservedData getDataToBePreserved()
     {
         PreservedData preservedData = new PreservedData(shouldIntroduceSpaceShip, lifeLevelProgress, currentFriendlyShip, 
@@ -659,6 +656,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         stopAllThreads();
         return preservedData;
     }
+
 
     void setOldData(@NotNull Context context, @NotNull PreservedData lastPreservedData)
     {
@@ -671,6 +669,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
         buildShip(13);
     }
+
 
     Bitmap buildEnemyImage(String imageName)
     {
