@@ -137,7 +137,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
             // Below Sets Positions and Limits for friendly Ship
             buildBackground();
-            buildShip(13);
+            buildShip(14);
             buildLifeBar();
             shipMaxTopAllowed = canvas_bottom - ((int) ((screenPercentageForMovementOfShip * canvas_bottom) + (currentFriendlyShip.getFriendlyShipHeight() / 2)));
             shipMinTopAllowed = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
@@ -180,7 +180,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             canvas_right = width;
             currentBackgroundImage = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(currentBackgroundName, "drawable", context.getPackageName()));
             buildBackground();
-            buildShip(13);
+            buildShip(14);
             buildLifeBar();
             shipMaxTopAllowed = canvas_bottom - ((int) ((screenPercentageForMovementOfShip * canvas_bottom) + (currentFriendlyShip.getFriendlyShipHeight() / 2)));
             shipMinTopAllowed = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
@@ -195,7 +195,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public boolean onTouch(View v, @NotNull MotionEvent event) {
         // Handle touch events
         tempShipLeft = event.getX() - (currentFriendlyShip.getFriendlyShipWidth() / 2);
-        tempShipTop = event.getY() - (3 * currentFriendlyShip.getFriendlyShipHeight() / 4);
+        tempShipTop = event.getY() - (11 * currentFriendlyShip.getFriendlyShipHeight() / 14);
         updateFriendlyShipPosition();
         return true;
     }
@@ -298,7 +298,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 }
                 // calculate the time required to draw the frame in ms
                 frameTime = (System.nanoTime() - frameStartTime) / 1000000;
-                Log.e(TAG, "run: " + frameTime);
                 // If faster than the max fps -> limit the FPS
                 if (frameTime < MAX_FRAME_TIME) {
                     try {
@@ -620,7 +619,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         enemyHashMap = lastPreservedData.getLastEnemyObjectHashMap();
         this.canvas_right = lastPreservedData.getLastCanvasRight();
         this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
-        buildShip(13);
+        buildShip(14);
     }
 
 
