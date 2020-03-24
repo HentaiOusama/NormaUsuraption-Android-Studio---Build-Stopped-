@@ -30,35 +30,34 @@ public class MainActivity extends AppCompatActivity {
     public AudioManager bgAudioManager;
 
     private AudioManager.OnAudioFocusChangeListener bgAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-            @Override
-            public void onAudioFocusChange(int focusChange) {
-                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
-                        focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                    BG_Sound_Player.pause();
-                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                    // The AUDIOFOCUS_GAIN case means we have regained focus and can resume playback.
-                    BG_Sound_Player.start();
-                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                    // The AUDIOFOCUS_LOSS case means we've lost audio focus and
-                    // Stop playback and clean up resources
-                    releaseMediaPlayer();
-                }
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+                    focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                BG_Sound_Player.pause();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                // The AUDIOFOCUS_GAIN case means we have regained focus and can resume playback.
+                BG_Sound_Player.start();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                // The AUDIOFOCUS_LOSS case means we've lost audio focus and
+                // Stop playback and clean up resources
+                releaseMediaPlayer();
             }
-        };
+        }
+    };
 
     private MediaPlayer.OnCompletionListener bgAudioCompletionListener = new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                // Now that the sound file has finished playing, release the media player resources.
-                mediaPlayer.seekTo(0);
-                mediaPlayer.start();
-            }
-        };
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            // Now that the sound file has finished playing, release the media player resources.
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
+        }
+    };
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -76,8 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Below Code is for Playing BG Music
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             bgAudioManager = (AudioManager) MainActivity.this.getSystemService(Context.AUDIO_SERVICE);
             assert bgAudioManager != null;
             int result = bgAudioManager.requestAudioFocus(bgAudioFocusChangeListener,
@@ -215,12 +213,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             BG_Sound_Player.start();
         }
     }
@@ -229,8 +225,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             BG_Sound_Player.pause();
         }
     }
@@ -243,54 +238,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void changeActivity()
-    {
-        switch (intentNumber)
-        {
-            case 1 :
+    public void changeActivity() {
+        switch (intentNumber) {
+            case 1:
                 Start_Game();
                 break;
 
-            case 2 :
+            case 2:
                 Open_Option();
                 break;
 
-            case 3 :
+            case 3:
                 Show_Leaderboard();
                 break;
 
-            case 4 :
+            case 4:
                 Open_Settings();
                 break;
         }
     }
 
-    public void Start_Game()
-    {
+    public void Start_Game() {
         startActivity(Play_Intent);
         finish();
     }
 
-    public void Open_Option()
-    {
+    public void Open_Option() {
         startActivity(Options_Intent);
         finish();
     }
 
-    public void Show_Leaderboard()
-    {
+    public void Show_Leaderboard() {
         startActivity(Leaderboard_Intent);
         finish();
     }
 
-    public void Open_Settings()
-    {
+    public void Open_Settings() {
         startActivity(Settings_Intent);
         finish();
     }
 
-    private void releaseMediaPlayer()
-    {
+    private void releaseMediaPlayer() {
         // If the media player is not null, then it may be currently playing a sound.
         if (BG_Sound_Player != null) {
             // Regardless of the current state of the media player, release its resources

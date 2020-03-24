@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class GamePlay_Activity extends AppCompatActivity {
@@ -53,8 +54,7 @@ public class GamePlay_Activity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Remove NavBar
         decorView = getWindow().getDecorView();
@@ -66,8 +66,7 @@ public class GamePlay_Activity extends AppCompatActivity {
         backgroundName = "level_1_background";
         currentFriendlyBulletName = "red_animated_bullet_";
 
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             bgAudioManager = (AudioManager) GamePlay_Activity.this.getSystemService(Context.AUDIO_SERVICE);
             assert bgAudioManager != null;
             int result = bgAudioManager.requestAudioFocus(bgAudioFocusChangeListener,
@@ -92,36 +91,29 @@ public class GamePlay_Activity extends AppCompatActivity {
 
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         // stop the drawing to save cpu time
         preservedData = gamePlayView.getDataToBePreserved();
         gamePlayView = null;
         super.onPause();
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             BG_Sound_Player.pause();
         }
     }
 
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
-        if(!isFirstTime)
-        {
+        if (!isFirstTime) {
             gamePlayView = new GamePlayView(GamePlay_Activity.this);
             gamePlayView.setOldData(GamePlay_Activity.this, preservedData);
             setContentView(gamePlayView);
-        }
-        else
-        {
+        } else {
             isFirstTime = false;
         }
-        if(isMusicEnabled)
-        {
+        if (isMusicEnabled) {
             BG_Sound_Player.start();
         }
     }
@@ -143,23 +135,19 @@ public class GamePlay_Activity extends AppCompatActivity {
     }
 
 
-    public static String getBackgroundName()
-    {
+    public static String getBackgroundName() {
         return backgroundName;
     }
 
-    public static String getCurrentFriendlyBulletName()
-    {
+    public static String getCurrentFriendlyBulletName() {
         return currentFriendlyBulletName;
     }
 
-    public static String getCurrentShipName()
-    {
+    public static String getCurrentShipName() {
         return currentShipName;
     }
 
-    private void releaseMediaPlayer()
-    {
+    private void releaseMediaPlayer() {
         // If the media player is not null, then it may be currently playing a sound.
         if (BG_Sound_Player != null) {
             // Regardless of the current state of the media player, release its resources

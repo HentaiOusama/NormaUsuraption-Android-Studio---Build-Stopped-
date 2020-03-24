@@ -4,8 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-class Bullet
-{
+class Bullet {
     private Bitmap[] bulletImages;
     private int upSpeed, downSpeed, rightSpeed, leftSpeed;
     private float bulletHeight, bulletWidth;
@@ -15,14 +14,12 @@ class Bullet
     private int totalNumberOfFrames;
     private int frameType;  // 1 = looping and 2 = non Looping
 
-    Bullet(Context context, String bulletImageName,int totalNumberOfFrames, int frameType, int upSpeed,
-           int downSpeed, int rightSpeed, int leftSpeed, int millisBeforeNextBullet)
-    {
+    Bullet(Context context, String bulletImageName, int totalNumberOfFrames, int frameType, int upSpeed,
+           int downSpeed, int rightSpeed, int leftSpeed, int millisBeforeNextBullet) {
         this.frameType = frameType;
         this.totalNumberOfFrames = totalNumberOfFrames;
         bulletImages = new Bitmap[totalNumberOfFrames];
-        for(int i = 0; i < totalNumberOfFrames; i++)
-        {
+        for (int i = 0; i < totalNumberOfFrames; i++) {
             bulletImages[i] = BitmapFactory.decodeResource(context.getResources(),
                     context.getResources().getIdentifier(bulletImageName + i, "drawable", context.getPackageName()));
         }
@@ -35,88 +32,68 @@ class Bullet
         bulletWidth = bulletImages[0].getScaledWidth(bulletImages[0].getDensity());
     }
 
-    Bitmap getBulletFrame()
-    {
-        if(frameType == 1)
-        {
+    Bitmap getBulletFrame() {
+        if (frameType == 1) {
             return getLoopBulletFrame();
-        }
-        else if (frameType == 2)
-        {
+        } else if (frameType == 2) {
             return getNonLoopBulletFrame();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    private Bitmap getLoopBulletFrame()
-    {
+    private Bitmap getLoopBulletFrame() {
         currentFrameNumber += 1;
-        if(currentFrameNumber >= totalNumberOfFrames)
-        {
+        if (currentFrameNumber >= totalNumberOfFrames) {
             currentFrameNumber = 0;
         }
         return bulletImages[currentFrameNumber];
     }
 
-    private Bitmap getNonLoopBulletFrame()
-    {
-        if(currentFrameNumber != totalNumberOfFrames)
-        {
+    private Bitmap getNonLoopBulletFrame() {
+        if (currentFrameNumber != totalNumberOfFrames) {
             currentFrameNumber += 1;
         }
         return bulletImages[currentFrameNumber];
     }
 
-    int getUpSpeed()
-    {
+    int getUpSpeed() {
         return upSpeed;
     }
 
-    int getDownSpeed()
-    {
+    int getDownSpeed() {
         return downSpeed;
     }
 
-    int getLeftSpeed()
-    {
+    int getLeftSpeed() {
         return leftSpeed;
     }
 
-    int getRightSpeed()
-    {
+    int getRightSpeed() {
         return rightSpeed;
     }
 
-    float getLocationTop()
-    {
+    float getLocationTop() {
         return locationTop;
     }
 
-    float getLocationLeft()
-    {
+    float getLocationLeft() {
         return locationLeft;
     }
 
-    float getLocationBottom()
-    {
+    float getLocationBottom() {
         return locationBottom;
     }
 
-    float getLocationRight()
-    {
+    float getLocationRight() {
         return locationRight;
     }
 
-    float getBulletHeight()
-    {
+    float getBulletHeight() {
         return bulletHeight;
     }
 
-    float getBulletWidth()
-    {
+    float getBulletWidth() {
         return bulletWidth;
     }
 
@@ -129,9 +106,8 @@ class Bullet
         locationLeft = left;
         locationRight = locationLeft + bulletWidth;
     }
-    
-    int getMillisBeforeNextBullet()
-    {
+
+    int getMillisBeforeNextBullet() {
         return millisBeforeNextBullet;
     }
 }

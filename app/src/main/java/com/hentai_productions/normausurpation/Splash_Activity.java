@@ -21,20 +21,15 @@ public class Splash_Activity extends AppCompatActivity {
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
 
-        Thread thread = new Thread()
-        {
+        Thread thread = new Thread() {
             @Override
-            public void run()
-            {
-                try
-                {
+            public void run() {
+                try {
                     sleep(2000);
                     Intent intent = new Intent(Splash_Activity.this, MainActivity.class);
                     startActivity(intent);
                     Splash_Activity.this.finish();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -44,8 +39,7 @@ public class Splash_Activity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
 

@@ -1,16 +1,14 @@
 package com.hentai_productions.normausurpation;
 
-class PreservedData
-{
+class PreservedData {
     private boolean shouldIntroduceShip;
     private int lastLifeLevelProgress;
     private float lastCanvasRight, lastCanvasBottom;
     private FriendlyShipObject lastFriendlyShipObject;
     private EnemyObjectHashMap lastEnemyObjectHashMap;
 
-    PreservedData (boolean shouldIntroduceShip, int lastLifeLevelProgress, FriendlyShipObject lastFriendlyShipObject,
-                   float lastCanvasRight, float lastCanvasBottom, EnemyObjectHashMap lastEnemyObjectHashMap)
-    {
+    PreservedData(boolean shouldIntroduceShip, int lastLifeLevelProgress, FriendlyShipObject lastFriendlyShipObject,
+                  float lastCanvasRight, float lastCanvasBottom, EnemyObjectHashMap lastEnemyObjectHashMap) {
         this.shouldIntroduceShip = shouldIntroduceShip;
         this.lastLifeLevelProgress = lastLifeLevelProgress;
         this.lastFriendlyShipObject = lastFriendlyShipObject;
@@ -19,33 +17,27 @@ class PreservedData
         this.lastEnemyObjectHashMap = lastEnemyObjectHashMap;
     }
 
-    boolean getShouldIntroduceShip()
-    {
+    boolean getShouldIntroduceShip() {
         return shouldIntroduceShip;
     }
 
-    int getLastLifeLevelProgress()
-    {
+    int getLastLifeLevelProgress() {
         return lastLifeLevelProgress;
     }
 
-    FriendlyShipObject getLastShipObject()
-    {
+    FriendlyShipObject getLastShipObject() {
         return lastFriendlyShipObject;
     }
 
-    float getLastCanvasRight()
-    {
+    float getLastCanvasRight() {
         return lastCanvasRight;
     }
 
-    float getLastCanvasBottom()
-    {
+    float getLastCanvasBottom() {
         return lastCanvasBottom;
     }
 
-    EnemyObjectHashMap getLastEnemyObjectHashMap()
-    {
+    EnemyObjectHashMap getLastEnemyObjectHashMap() {
         return lastEnemyObjectHashMap;
     }
 }

@@ -23,8 +23,7 @@ public class Leaderboard_Activity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
 

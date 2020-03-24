@@ -7,8 +7,7 @@ import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 
-class FriendlyShipObject implements Runnable
-{
+class FriendlyShipObject implements Runnable {
     private Context context;
 
     // Friendly ship related variables
@@ -23,7 +22,7 @@ class FriendlyShipObject implements Runnable
     private int friendlyBulletFrameType; // 1 = looping and 2 = non Looping
     private int friendlyBulletUpSpeed, friendlyBulletDownSpeed, friendlyBulletRightSpeed, friendlyBulletLeftSpeed;
     private int millisBeforeNextFriendlyBullet;
-    private myQueue<Bullet> friendlyBulletQueue = new myQueue<>() ;
+    private myQueue<Bullet> friendlyBulletQueue = new myQueue<>();
     private boolean shouldBuildFriendlyBullets = false;
     private Bullet tempBullet;
     private int bulletQueueLength;
@@ -32,6 +31,7 @@ class FriendlyShipObject implements Runnable
     // Misc Variables and Overridden run Method
     private String TAG = "MY DEBUG TAG";
     private float canvas_bottom, canvas_right;
+
     @Override
     public void run() {
         double shipWidthHalf = (friendlyShipImage.getScaledWidth(friendlyShipImage.getDensity()) * 0.5);
@@ -40,12 +40,10 @@ class FriendlyShipObject implements Runnable
         double bulletHeightHalf = (friendlyBulletHeight) * 0.5;
         bulletPositionUpdatingThread.start();
 
-        do
-        {
+        do {
             long previousBulletStartTime = System.nanoTime() / 1000000;
 
-            switch (lifeLevel)
-            {
+            switch (lifeLevel) {
                 case 1:
                     buildLevel1Bullets(shipWidthHalf, shipHeightHalf, bulletWidthHalf, bulletHeightHalf);
                     break;
@@ -63,18 +61,17 @@ class FriendlyShipObject implements Runnable
         }
         while (shouldBuildFriendlyBullets);
     }
+
     private Thread bulletBuildingThread = new Thread(this, "Bullet Building Thread");
     private Thread bulletPositionUpdatingThread = new Thread() {
         @Override
         public void run() {
             super.run();
-            while (shouldBuildFriendlyBullets)
-            {
+            while (shouldBuildFriendlyBullets) {
                 long updateStartTime = System.nanoTime();
                 updateBulletPositions();
                 long updatingTime = (System.nanoTime() - updateStartTime) / 1000000;
-                if(updatingTime < MAX_FRAME_TIME)
-                {
+                if (updatingTime < MAX_FRAME_TIME) {
                     try {
                         Thread.sleep(MAX_FRAME_TIME - updatingTime);
                     } catch (InterruptedException e) {
@@ -86,13 +83,11 @@ class FriendlyShipObject implements Runnable
     };
 
 
-
     // Constructor
     FriendlyShipObject(Context context, @NotNull Bitmap friendlyShipImage, int lifeLevel, float friendlyShipTop, float friendlyShipLeft,
                        String friendlyBulletImageName, int totalNumberOfFrames, int friendlyBulletFrameType, int friendlyBulletUpSpeed,
                        int friendlyBulletDownSpeed, int friendlyBulletRightSpeed, int friendlyBulletLeftSpeed, int millisBeforeNextFriendlyBullet,
-                       int FPS)
-    {
+                       int FPS) {
         this.context = context;
         this.friendlyShipImage = friendlyShipImage;
         this.lifeLevel = lifeLevel;
@@ -119,45 +114,36 @@ class FriendlyShipObject implements Runnable
     }
 
 
-
     // Ship related methods
-    Bitmap getFriendlyShipImage()
-    {
+    Bitmap getFriendlyShipImage() {
         return friendlyShipImage;
     }
 
-    int getLifeLevel()
-    {
+    int getLifeLevel() {
         return lifeLevel;
     }
 
-    float getFriendlyShipTop()
-    {
+    float getFriendlyShipTop() {
         return friendlyShipTop;
     }
 
-    float getFriendlyShipLeft()
-    {
+    float getFriendlyShipLeft() {
         return friendlyShipLeft;
     }
 
-    float getFriendlyShipBottom()
-    {
+    float getFriendlyShipBottom() {
         return friendlyShipTop;
     }
 
-    float getFriendlyShipRight()
-    {
+    float getFriendlyShipRight() {
         return friendlyShipLeft;
     }
 
-    float getFriendlyShipHeight()
-    {
+    float getFriendlyShipHeight() {
         return friendlyShipHeight;
     }
 
-    float getFriendlyShipWidth()
-    {
+    float getFriendlyShipWidth() {
         return friendlyShipWidth;
     }
 
@@ -184,7 +170,6 @@ class FriendlyShipObject implements Runnable
     }
 
 
-
     // Bullet related methods
     int getFriendlyBulletQueueSize() {
         return bulletQueueLength;
@@ -203,8 +188,7 @@ class FriendlyShipObject implements Runnable
     }
 
     private void updateBulletPositions() {
-        for (int i = 0; i < bulletQueueLength; i++)
-        {
+        for (int i = 0; i < bulletQueueLength; i++) {
             tempBullet = friendlyBulletQueue.get(i);
             float tempTop = (tempBullet.getLocationTop() - tempBullet.getUpSpeed() + tempBullet.getDownSpeed());
             float tempLeft = (tempBullet.getLocationLeft() + tempBullet.getRightSpeed() - tempBullet.getLeftSpeed());
@@ -222,7 +206,6 @@ class FriendlyShipObject implements Runnable
             }
         }
     }
-
 
 
     // Bullet thread related methods

@@ -12,20 +12,20 @@ public class Option_Activity extends AppCompatActivity {
     int uiOptionsForDevicesWithoutNavBar = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_FULLSCREEN;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_option_);
 
         decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
-            decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
     }
 
     @Override

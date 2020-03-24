@@ -19,14 +19,13 @@ public class Settings_Activity extends AppCompatActivity {
         setContentView(R.layout.activity_settings_);
 
         decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
-            decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
+        decorView.setSystemUiVisibility(uiOptionsForDevicesWithoutNavBar);
 
     }
 
