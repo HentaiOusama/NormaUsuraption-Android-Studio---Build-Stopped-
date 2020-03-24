@@ -87,7 +87,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     ///// Regarding Enemies
-    public EnemyObjectHashMap enemyHashMap = null;
+    public EnemyShipObjectHashMap enemyHashMap = null;
     public int enemyHashMapMaxHeightKey, enemyHashMapMaxWidthKey;
     public myQueue<Bullet> tempEnemyBulletQueue;
     /////
@@ -230,7 +230,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                         // First is Background
                         canvas.drawBitmap(currentBackgroundImage, 0, 0, null);
 
-                        /*
+
                         // Below part draws enemy bullets and ships
                         enemyHashMapMaxHeightKey = enemyHashMap.getMaxHeightKey();
                         enemyHashMapMaxWidthKey = enemyHashMap.getMaxWidthKey();
@@ -242,10 +242,10 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                 {
                                     for(int l = 0; l <= enemyHashMapMaxWidthKey; l++)
                                     {
-                                        int lengthOfList = enemyHashMap.getEnemyObjectListSizeWithKeys(i, j, k, l);
+                                        int lengthOfList = enemyHashMap.getEnemyShipObjectListSizeWithKeys(i, j, k, l);
                                         for(int m = 0; m < lengthOfList; m++)
                                         {
-                                            tempEnemyBulletQueue = enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyBulletQueue();
+                                            tempEnemyBulletQueue = enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).getEnemyBulletQueue();
                                             int queueSize = tempEnemyBulletQueue.getSize();
                                             for(int n = 0; n < queueSize; n++)
                                             {
@@ -253,15 +253,14 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                                                         tempEnemyBulletQueue.get(n).getLocationLeft(),
                                                         tempEnemyBulletQueue.get(n).getLocationTop(), null);
                                             }
-                                            canvas.drawBitmap(enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipImage(),
-                                                    enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipLeft(),
-                                                    enemyHashMap.getEnemyObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipTop(), null);
+                                            canvas.drawBitmap(enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipImage(),
+                                                    enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipLeft(),
+                                                    enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).getEnemyShipTop(), null);
                                         }
                                     }
                                 }
                             }
                         }
-                         */
 
                         // Below loop draws the friendly bullets on screen
                         friendlyBulletQueue = currentFriendlyShip.getFriendlyBulletQueue();
@@ -299,6 +298,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                 }
                 // calculate the time required to draw the frame in ms
                 frameTime = (System.nanoTime() - frameStartTime) / 1000000;
+                Log.e(TAG, "run: " + frameTime);
                 // If faster than the max fps -> limit the FPS
                 if (frameTime < MAX_FRAME_TIME) {
                     try {
@@ -587,13 +587,14 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
     // Builds Level 1
     public void buildLevel1() {
-        enemyHashMap = new EnemyObjectHashMap(canvas_bottom, canvas_right, 50);
+        enemyHashMap = new EnemyShipObjectHashMap(canvas_bottom, canvas_right, 385, 175);
         Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1");
 
-        EnemyObject tempEnemyObject = new EnemyObject(context, tempEnemyShipBitmap, 100, 100,
-                currentFriendlyBulletName, 30, 0, 0, 200,
-                0, 100, 100, 1);
-        enemyHashMap.addEnemyObject(tempEnemyObject, 100, 100, 100, 100);
+        EnemyShipObject tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap, 100, 100,
+                100, currentFriendlyBulletName, 10, 1, 0,
+                50, 0, 0, 1000, 60);
+        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
     }
 
 

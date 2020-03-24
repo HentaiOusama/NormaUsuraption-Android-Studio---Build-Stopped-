@@ -132,11 +132,11 @@ class FriendlyShipObject implements Runnable {
     }
 
     float getFriendlyShipBottom() {
-        return friendlyShipTop;
+        return friendlyShipBottom;
     }
 
     float getFriendlyShipRight() {
-        return friendlyShipLeft;
+        return friendlyShipRight;
     }
 
     float getFriendlyShipHeight() {

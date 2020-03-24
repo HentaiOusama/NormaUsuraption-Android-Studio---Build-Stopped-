@@ -5,16 +5,16 @@ class PreservedData {
     private int lastLifeLevelProgress;
     private float lastCanvasRight, lastCanvasBottom;
     private FriendlyShipObject lastFriendlyShipObject;
-    private EnemyObjectHashMap lastEnemyObjectHashMap;
+    private EnemyShipObjectHashMap lastEnemyShipObjectHashMap;
 
     PreservedData(boolean shouldIntroduceShip, int lastLifeLevelProgress, FriendlyShipObject lastFriendlyShipObject,
-                  float lastCanvasRight, float lastCanvasBottom, EnemyObjectHashMap lastEnemyObjectHashMap) {
+                  float lastCanvasRight, float lastCanvasBottom, EnemyShipObjectHashMap lastEnemyShipObjectHashMap) {
         this.shouldIntroduceShip = shouldIntroduceShip;
         this.lastLifeLevelProgress = lastLifeLevelProgress;
         this.lastFriendlyShipObject = lastFriendlyShipObject;
         this.lastCanvasRight = lastCanvasRight;
         this.lastCanvasBottom = lastCanvasBottom;
-        this.lastEnemyObjectHashMap = lastEnemyObjectHashMap;
+        this.lastEnemyShipObjectHashMap = lastEnemyShipObjectHashMap;
     }
 
     boolean getShouldIntroduceShip() {
@@ -37,7 +37,7 @@ class PreservedData {
         return lastCanvasBottom;
     }
 
-    EnemyObjectHashMap getLastEnemyObjectHashMap() {
-        return lastEnemyObjectHashMap;
+    EnemyShipObjectHashMap getLastEnemyObjectHashMap() {
+        return lastEnemyShipObjectHashMap;
     }
 }
