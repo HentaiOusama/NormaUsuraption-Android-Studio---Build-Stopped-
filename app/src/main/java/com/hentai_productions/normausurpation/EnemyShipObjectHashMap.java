@@ -163,7 +163,7 @@ class EnemyShipObjectHashMap {
         return (((((enemyObjectHashMap.get(shipKeyTop)).get(shipKeyBottom)).get(shipKeyLeft)).get(shipKeyRight)).get(index));
     }
 
-    void stopAllEnemyBullets() {
+    void stopAllEnemyShipThreads() {
         for (int i = 0; i <= maxHeightKey; i++) {
             for (int j = 0; j <= maxHeightKey; j++) {
                 for (int k = 0; k <= maxWidthKey; k++) {
@@ -178,14 +178,14 @@ class EnemyShipObjectHashMap {
         }
     }
 
-    void startAllEnemyBullets() {
+    void startAllEnemyShipThreads(float canvas_bottom, float canvas_right) {
         for (int i = 0; i <= maxHeightKey; i++) {
             for (int j = 0; j <= maxHeightKey; j++) {
                 for (int k = 0; k <= maxWidthKey; k++) {
                     for (int l = 0; l <= maxWidthKey; l++) {
                         int len = getEnemyShipObjectListSizeWithKeys(i, j, k, l);
                         for (int m = 0; m < len; m++) {
-                            getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).startBuildingBullets(0, 0);
+                            getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).startBuildingBullets(canvas_bottom, canvas_right);
                         }
                     }
                 }

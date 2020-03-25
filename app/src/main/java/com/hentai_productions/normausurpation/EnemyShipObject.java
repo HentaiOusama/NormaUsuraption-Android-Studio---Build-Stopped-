@@ -15,7 +15,8 @@ class EnemyShipObject implements Runnable {
     private int currentLife;
     private float enemyShipTop, enemyShipLeft, enemyShipBottom, enemyShipRight;
     private float enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
-    private myQueue<EnemyShipSpeedSet> enemyShipMovement = new myQueue<>();
+    private myQueue<EnemyShipSpeedSet> enemyShipMovementPattern = new myQueue<>();
+    private boolean shouldMoveEnemyShip = false;
 
     // Enemy bullet related variables
     private String enemyBulletImageName;
@@ -29,10 +30,11 @@ class EnemyShipObject implements Runnable {
     private int bulletQueueLength;
     private final int MAX_FRAME_TIME;
 
-    // Misc Variables and Overridden run Method
+    // Misc Variables
     private String TAG = "MY DEBUG TAG";
     private float canvas_bottom, canvas_right;
 
+    // Threading Stuff below
     @Override
     public void run() {
         double shipWidthHalf = (enemyShipImage.getScaledWidth(enemyShipImage.getDensity()) * 0.5);
@@ -40,6 +42,7 @@ class EnemyShipObject implements Runnable {
         double bulletWidthHalf = (enemyBulletWidth) * 0.5;
         double bulletHeightHalf = (enemyBulletHeight) * 0.5;
         bulletPositionUpdatingThread.start();
+        enemyShipPositionUpdatingThread.start();
 
         do {
             long previousBulletStartTime = System.nanoTime() / 1000000;
@@ -82,18 +85,39 @@ class EnemyShipObject implements Runnable {
             }
         }
     };
+    private Thread enemyShipPositionUpdatingThread = new Thread() {
+        @Override
+        public void run() {
+            super.run();
+            EnemyShipSpeedSet currentEnemyShipSpeedSet;
+            while(shouldMoveEnemyShip) {
+                long updateStartTime = System.nanoTime();
+                currentEnemyShipSpeedSet = enemyShipMovementPattern.getNextEnemyShipSpeedSet();
+                updateShipPosition(currentEnemyShipSpeedSet);
+                long updatingTime = (System.nanoTime() - updateStartTime) / 1000000;
+                if (updatingTime < MAX_FRAME_TIME) {
+                    try {
+                        Thread.sleep(MAX_FRAME_TIME - updatingTime);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "run: ", e);
+                    }
+                }
+            }
+        }
+    };
 
 
     // Constructor
     EnemyShipObject(Context context, @NotNull Bitmap enemyShipImage, int currentLife, float enemyShipTop, float enemyShipLeft,
-                    String enemyBulletImageName, int totalNumberOfBulletFrames, int enemyBulletFrameType, int enemyBulletUpSpeed,
-                    int enemyBulletDownSpeed, int enemyBulletRightSpeed, int enemyBulletLeftSpeed, int millisBeforeNextEnemyBullet,
-                    int FPS) {
+                    myQueue<EnemyShipSpeedSet> enemyShipMovementPattern, String enemyBulletImageName, int totalNumberOfBulletFrames,
+                    int enemyBulletFrameType, int enemyBulletUpSpeed, int enemyBulletDownSpeed, int enemyBulletRightSpeed,
+                    int enemyBulletLeftSpeed, int millisBeforeNextEnemyBullet, int FPS) {
         this.context = context;
         this.enemyShipImage = enemyShipImage;
         this.currentLife = currentLife;
         this.enemyShipTop = enemyShipTop;
         this.enemyShipLeft = enemyShipLeft;
+        this.enemyShipMovementPattern = enemyShipMovementPattern;
         this.enemyBulletImageName = enemyBulletImageName;
         this.totalNumberOfBulletFrames = totalNumberOfBulletFrames;
         this.enemyBulletFrameType = enemyBulletFrameType;
@@ -148,12 +172,12 @@ class EnemyShipObject implements Runnable {
         return enemyShipWidth;
     }
 
-    void setEnemyShipTop(float enemyShipTop) {
+    private void setEnemyShipTop(float enemyShipTop) {
         this.enemyShipTop = enemyShipTop;
         enemyShipBottom = this.enemyShipTop + enemyShipHeight;
     }
 
-    void setEnemyShipLeft(float enemyShipLeft) {
+    private void setEnemyShipLeft(float enemyShipLeft) {
         this.enemyShipLeft = enemyShipLeft;
         enemyShipRight = this.enemyShipLeft + enemyShipWidth;
     }
@@ -168,6 +192,13 @@ class EnemyShipObject implements Runnable {
         enemyShipWidth = enemyShipImage.getScaledWidth(enemyShipImage.getDensity());
         setEnemyShipTop(enemyShipTop);
         setEnemyShipLeft(enemyShipLeft);
+    }
+
+    private void updateShipPosition(@NotNull EnemyShipSpeedSet currentEnemyShipSpeedSet) {
+        enemyShipTop += (currentEnemyShipSpeedSet.getEnemyShipDownSpeed() - currentEnemyShipSpeedSet.getEnemyShipUpSpeed());
+        enemyShipBottom = enemyShipTop + enemyShipHeight;
+        enemyShipLeft += (currentEnemyShipSpeedSet.getEnemyShipRightSpeed() -currentEnemyShipSpeedSet.getEnemyShipLeftSpeed());
+        enemyShipRight = enemyShipLeft + enemyShipWidth;
     }
 
 
@@ -208,8 +239,6 @@ class EnemyShipObject implements Runnable {
         }
     }
 
-
-    // Bullet thread related methods
     private void buildLevel1Bullets(double shipWidthHalf, double shipHeightHalf, double bulletWidthHalf, double bulletHeightHalf) {
 
         tempBullet = new Bullet(context, enemyBulletImageName, totalNumberOfBulletFrames, enemyBulletFrameType, enemyBulletUpSpeed,
@@ -220,8 +249,11 @@ class EnemyShipObject implements Runnable {
         bulletQueueLength++;
     }
 
+
+    // Bullet thread related methods. These start and stop threads also handles movement of ship
     void startBuildingBullets(float canvas_bottom, float canvas_right) {
         shouldBuildEnemyBullets = true;
+        shouldMoveEnemyShip = true;
         this.canvas_bottom = canvas_bottom;
         this.canvas_right = canvas_right;
         bulletBuildingThread.start();
@@ -229,6 +261,7 @@ class EnemyShipObject implements Runnable {
 
     void stopBuildingBullets() {
         shouldBuildEnemyBullets = false;
+        shouldMoveEnemyShip = false;
         try {
             while (true) {
                 try {
@@ -241,6 +274,14 @@ class EnemyShipObject implements Runnable {
             while (true) {
                 try {
                     bulletPositionUpdatingThread.join(500);
+                    break;
+                } catch (Exception e) {
+                    Log.e(TAG, "stopBuildingBullets: Bullet Building Thread", e);
+                }
+            }
+            while (true) {
+                try {
+                    enemyShipPositionUpdatingThread.join(500);
                     break;
                 } catch (Exception e) {
                     Log.e(TAG, "stopBuildingBullets: Bullet Building Thread", e);

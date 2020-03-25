@@ -90,6 +90,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public EnemyShipObjectHashMap enemyHashMap = null;
     public int enemyHashMapMaxHeightKey, enemyHashMapMaxWidthKey;
     public myQueue<Bullet> tempEnemyBulletQueue;
+    public PresetMovementPatterns enemyMovementBuilder = new PresetMovementPatterns();
     /////
 
     // constructor
@@ -350,6 +351,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             spaceShipIntroducingThread = null;
         }
         currentFriendlyShip.stopBuildingBullets();
+        enemyHashMap.stopAllEnemyShipThreads();
     }
 
 
@@ -590,10 +592,12 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1");
 
         EnemyShipObject tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap, 100, 100,
-                100, currentFriendlyBulletName, 10, 1, 0,
+                100, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                currentFriendlyBulletName, 10, 1, 0,
                 50, 0, 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
                 tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+        enemyHashMap.startAllEnemyShipThreads(canvas_bottom, canvas_right);
     }
 
 
