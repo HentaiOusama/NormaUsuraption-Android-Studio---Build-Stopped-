@@ -17,11 +17,10 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="175sp"
         android:layout_marginStart="50sp"
+        android:layout_marginTop="175sp"
         android:layout_marginEnd="50sp"
         android:layout_marginBottom="50sp"
-        android:background="@drawable/leaderboard_lview_bg"/>
-
+        android:background="@drawable/leaderboard_lview_bg" />
 
 </RelativeLayout>

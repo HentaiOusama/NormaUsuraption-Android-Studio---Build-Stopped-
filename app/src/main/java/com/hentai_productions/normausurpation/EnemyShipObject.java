@@ -2,9 +2,7 @@ package com.hentai_productions.normausurpation;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
-
 import org.jetbrains.annotations.NotNull;
 
 class EnemyShipObject implements Runnable {
@@ -15,7 +13,7 @@ class EnemyShipObject implements Runnable {
     private int currentLife;
     private float enemyShipTop, enemyShipLeft, enemyShipBottom, enemyShipRight;
     private float enemyShipHeight, enemyShipWidth, enemyBulletHeight, enemyBulletWidth;
-    private myQueue<EnemyShipSpeedSet> enemyShipMovementPattern = new myQueue<>();
+    private myQueue<EnemyShipSpeedSet> enemyShipMovementPattern;
     private boolean shouldMoveEnemyShip = false;
 
     // Enemy bullet related variables

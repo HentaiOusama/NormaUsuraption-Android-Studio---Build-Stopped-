@@ -1,6 +1,6 @@
 package com.hentai_productions.normausurpation;
 
-public class PresetMovementPatterns {
+class PresetMovementPatterns {
 
     private int tempUpSpeed, tempDownSpeed, tempRightSpeed, tempLeftSpeed;
 
