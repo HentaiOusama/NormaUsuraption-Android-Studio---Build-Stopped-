@@ -1,29 +1,29 @@
 package com.hentai_productions.normausurpation;
 
-public class EnemyShipSpeedSet {
+class EnemyShipSpeedSet {
 
-    private int enemyShipUpSpeed, enemyShipDownSpeed, enemyShipLeftSpeed, enemyShipRightSpeed;
+    private float enemyShipUpSpeed, enemyShipDownSpeed, enemyShipLeftSpeed, enemyShipRightSpeed;
 
-    EnemyShipSpeedSet(int enemyShipUpSpeed, int enemyShipDownSpeed, int enemyShipRightSpeed, int enemyShipLeftSpeed) {
+    EnemyShipSpeedSet(float enemyShipUpSpeed, float enemyShipDownSpeed, float enemyShipRightSpeed, float enemyShipLeftSpeed) {
         this.enemyShipUpSpeed = enemyShipUpSpeed;
         this.enemyShipDownSpeed = enemyShipDownSpeed;
         this.enemyShipRightSpeed = enemyShipRightSpeed;
         this.enemyShipLeftSpeed = enemyShipLeftSpeed;
     }
 
-    public int getEnemyShipDownSpeed() {
+    float getEnemyShipDownSpeed() {
         return enemyShipDownSpeed;
     }
 
-    public int getEnemyShipLeftSpeed() {
+    float getEnemyShipLeftSpeed() {
         return enemyShipLeftSpeed;
     }
 
-    public int getEnemyShipRightSpeed() {
+    float getEnemyShipRightSpeed() {
         return enemyShipRightSpeed;
     }
 
-    public int getEnemyShipUpSpeed() {
+    float getEnemyShipUpSpeed() {
         return enemyShipUpSpeed;
     }
 }

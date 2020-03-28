@@ -90,7 +90,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public EnemyShipObjectHashMap enemyHashMap = null;
     public int enemyHashMapMaxHeightKey, enemyHashMapMaxWidthKey;
     public myQueue<Bullet> tempEnemyBulletQueue;
-    public PresetMovementPatterns enemyMovementBuilder = new PresetMovementPatterns();
+    public EnemyLevelBuilder enemyLevelBuilder;
     /////
 
     // constructor
@@ -109,8 +109,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public void surfaceCreated(SurfaceHolder holder) {
         this.holder = holder;
         /* Gets the name of background and Image from the activity_game_play and then builds the background
-         * as per our needs but these things in the if only needs to be done once. Outside this might be needed to everytime the surface is created.
-         * Say when the app is opened again from recent.*/
+         * as per our needs but these things in the if only needs to be done once. Outside this might be needed
+         * to build every time the surface is created. Say when the app is opened again from recent.*/
         if (firstTimeCreationOfSurface) {
             // Gets Window Details
             metrics = new DisplayMetrics();
@@ -144,7 +144,6 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             shipMinTopAllowed = canvas_bottom - currentFriendlyShip.getFriendlyShipHeight();
             currentFriendlyShip.setFriendlyShipLeft((canvas_right / 2) - (currentFriendlyShip.getFriendlyShipWidth() / 2));
             currentFriendlyShip.setFriendlyShipTop(canvas_bottom);
-            buildLevel(1);
             firstTimeCreationOfSurface = false;
         }
 
@@ -219,6 +218,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
             }
             spaceShipIntroducingThread = null;
         }
+        buildLevel(1);
         try {
             while (drawingActive) {
                 if (holder == null) {
@@ -352,6 +352,7 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         }
         currentFriendlyShip.stopBuildingBullets();
         enemyHashMap.stopAllEnemyShipThreads();
+        enemyLevelBuilder.stopBuildingLevel();
     }
 
 
@@ -570,40 +571,11 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
 
 
     // Calls relevant function that builds enemies as per the current level
-    public void buildLevel(int currentLevel) {
-        switch (currentLevel) {
-            case 1:
-                buildLevel1();
-                break;
-
-            case 2:
-                buildLevel2();
-                break;
-
-            default:
-                break;
-        }
-    }
-
-
-    // Builds Level 1
-    public void buildLevel1() {
-        enemyHashMap = new EnemyShipObjectHashMap(canvas_bottom, canvas_right, 385, 175);
-        Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1");
-
-        EnemyShipObject tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap, 100, 100,
-                100, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
-                currentFriendlyBulletName, 10, 1, 0,
-                50, 0, 0, 1000, 60);
-        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
-        enemyHashMap.startAllEnemyShipThreads(canvas_bottom, canvas_right);
-    }
-
-
-    // Builds Level 2
-    public void buildLevel2() {
-
+    public void buildLevel(int currentStageLevel) {
+        enemyHashMap = new EnemyShipObjectHashMap(canvas_bottom, canvas_right, 385, 175,
+                canvas_right, canvas_bottom);
+        enemyLevelBuilder = new EnemyLevelBuilder(context, canvas_right, canvas_bottom, enemyHashMap);
+        enemyLevelBuilder.startBuildingLevel(currentStageLevel);
     }
 
 
@@ -624,20 +596,5 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
         this.canvas_right = lastPreservedData.getLastCanvasRight();
         this.canvas_bottom = lastPreservedData.getLastCanvasBottom();
         buildShip(14);
-    }
-
-
-    Bitmap buildEnemyImage(String imageName) {
-        Bitmap tempEnemyShipBitmap = BitmapFactory.decodeResource(getResources(),
-                context.getResources().getIdentifier(imageName, "drawable", context.getPackageName()));
-
-        int originalHeight = tempEnemyShipBitmap.getScaledHeight(tempEnemyShipBitmap.getDensity());
-        int originalWidth = tempEnemyShipBitmap.getScaledWidth(tempEnemyShipBitmap.getDensity());
-        int percentageOfScreen = 8;
-        float heightRequired = (float) percentageOfScreen * canvas_bottom / 100;
-        float widthRequired = originalWidth / (originalHeight / heightRequired);
-        // So we'll resize the image now.
-        tempEnemyShipBitmap = Bitmap.createScaledBitmap(tempEnemyShipBitmap, (int) widthRequired, (int) heightRequired, true);
-        return tempEnemyShipBitmap;
     }
 }
