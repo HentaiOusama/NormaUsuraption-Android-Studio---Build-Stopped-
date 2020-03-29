@@ -13,8 +13,10 @@ class EnemyLevelBuilder {
     private PresetMovementPatterns enemyMovementBuilder = new PresetMovementPatterns();
     private int currentStageLevel;
     private final String TAG = "MY DEBUG TAG";
-    
-    
+    private EnemyShipObject tempEnemyObject;
+    private float leftCenterOffset = -50;
+
+
     // Constructor
     EnemyLevelBuilder(Context context, float canvas_right, float canvas_bottom, EnemyShipObjectHashMap enemyHashMap) {
         this.context = context;
@@ -43,15 +45,14 @@ class EnemyLevelBuilder {
             }
         }
     };
-    
 
-    
+
     // This is the main method called by the GamePlayView asking this class to build the HashMap given in the constructor
     void startBuildingLevel(int currentStageLevel) {
         this.currentStageLevel = currentStageLevel;
         levelBuildingThread.start();
     }
-    
+
     void stopBuildingLevel() {
         while (true) {
             try {
@@ -62,7 +63,7 @@ class EnemyLevelBuilder {
             }
         }
     }
-    
+
     // Builds the image of the enemyShip
     private Bitmap buildEnemyImage(String imageName, float heightAsPercentageOfScreen) {
         Bitmap tempEnemyShipBitmap = BitmapFactory.decodeResource(context.getResources(),
@@ -76,27 +77,79 @@ class EnemyLevelBuilder {
         tempEnemyShipBitmap = Bitmap.createScaledBitmap(tempEnemyShipBitmap, (int) widthRequired, (int) heightRequired, true);
         return tempEnemyShipBitmap;
     }
-    
+
     // Builds Level 1
     private void buildLevel1() {
-        Bitmap tempEnemyShipBitmap = buildEnemyImage("enemy_ship_1", 8);
+        Bitmap tempEnemyShipBitmap2, tempEnemyShipBitmap1 = buildEnemyImage("enemy_ship_1", (float) 5.5);
 
-        EnemyShipObject tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap, 100, 0,
-                -100, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
-                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(1, 0, -100, 200, 400),
+        tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap1, 100, 0,
+                -170, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(1, 0, -170, 200, 150),
                 "red_animated_bullet_", 10, 1, 0,
                 50, 0, 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
                 tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
-        try { 
-            Thread.sleep(1000);
+
+        tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap1, 100, 0,
+                canvas_right, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(1, 0, canvas_right, 200,
+                        canvas_right - 150 - tempEnemyObject.getEnemyShipWidth()), "red_animated_bullet_",
+                10, 1, 0, 50, 0,
+                0, 1000, 60);
+        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+        try {
+            Thread.sleep(40);
+        } catch (Exception e) {
+            Log.e(TAG, "buildLevel1: Error while sleeping the Thread", e);
+        }
+
+        tempEnemyShipBitmap2 = buildEnemyImage("enemy_ship_1", (float) 9.0);
+        tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap2, 100, -200,
+                ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset,
+                enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(2, -200,
+                        ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset, 200,
+                        ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset), "red_animated_bullet_",
+                10, 1, 0, 50, 0,
+                0, 1000, 60);
+        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+        try {
+            Thread.sleep(40);
         } catch (Exception e) {
             Log.e(TAG, "buildLevel1: Error while sleeping the Thread", e);
         }
     }
 
-    // Builds Level 2
-    private void buildLevel2() {
 
-    }    
+    // Builds Level 2  <--- Under Construction
+    private void buildLevel2() {
+        Bitmap tempEnemyShipBitmap2, tempEnemyShipBitmap1 = buildEnemyImage("/X/X INPUT NAME HERE /X/X", (float) 5.5);
+
+        tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap1, 100, 0,
+                -170, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(1, 0, -170, 200, 150),
+                "red_animated_bullet_", 10, 1, 0,
+                50, 0, 0, 1000, 60);
+        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+
+        tempEnemyShipBitmap2 = buildEnemyImage("/X/X INPUT NAME HERE /X/X", (float) 9.0);
+        tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap2, 100, -200,
+                ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset,
+                enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
+                enemyMovementBuilder.getStraightIntroducingPatternForEnemyShip(2, -200,
+                        ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset, 200,
+                        ((canvas_right) / 2) - ((tempEnemyObject.getEnemyShipWidth()) / 2) + leftCenterOffset), "red_animated_bullet_",
+                10, 1, 0, 50, 0,
+                0, 1000, 60);
+        enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+        try {
+            Thread.sleep(40);
+        } catch (Exception e) {
+            Log.e(TAG, "buildLevel1: Error while sleeping the Thread", e);
+        }
+    }
 }

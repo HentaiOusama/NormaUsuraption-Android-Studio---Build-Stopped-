@@ -3,8 +3,10 @@ package com.hentai_productions.normausurpation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
+
 import org.jetbrains.annotations.NotNull;
 
+// Does not support EnemyBoss :- So EnemyShipHashMap will also not support EnemyBoss
 class EnemyShipObject implements Runnable {
     private Context context;
 
@@ -89,7 +91,7 @@ class EnemyShipObject implements Runnable {
         public void run() {
             super.run();
             EnemyShipSpeedSet currentEnemyShipSpeedSet;
-            while(shouldMoveEnemyShip) {
+            while (shouldMoveEnemyShip) {
                 long updateStartTime = System.nanoTime();
                 currentEnemyShipSpeedSet = enemyShipMovementPattern.getNextEnemyShipSpeedSet();
                 updateShipPosition(currentEnemyShipSpeedSet);
@@ -111,7 +113,7 @@ class EnemyShipObject implements Runnable {
             EnemyShipSpeedSet currentEnemyShipSpeedSet;
             int numberOfMovements = enemyShipIntroductionPattern.getSize();
             int i = 0;
-            while(i < numberOfMovements) {
+            while (i < numberOfMovements) {
                 long updateStartTime = System.nanoTime();
                 currentEnemyShipSpeedSet = enemyShipIntroductionPattern.get(i);
                 updateShipPosition(currentEnemyShipSpeedSet);

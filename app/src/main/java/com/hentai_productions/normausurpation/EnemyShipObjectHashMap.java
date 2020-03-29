@@ -1,5 +1,7 @@
 package com.hentai_productions.normausurpation;
 
+import android.util.Log;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -26,18 +28,18 @@ class EnemyShipObjectHashMap {
                            float canvas_right, float canvas_bottom) {
         this.heightScaleValue = heightScaleValue;
         this.widthScaleValue = widthScaleValue;
-        maxHeightKey = (int) (maxHeight / heightScaleValue);
-        maxWidthKey = (int) (maxWidth / widthScaleValue);
+        maxHeightKey = (int) ((maxHeight + 350) / heightScaleValue);
+        maxWidthKey = (int) ((maxWidth + 350) / widthScaleValue);
         this.canvas_right = canvas_right;
         this.canvas_bottom = canvas_bottom;
 
-        for (int i = 0; i <= maxHeightKey; i++) {
+        for (int i = -3; i <= maxHeightKey; i++) {
             tempEnemyShipObjectHashMapBottom = new HashMap<>();
-            for (int j = 0; j <= maxHeightKey; j++) {
+            for (int j = -3; j <= maxHeightKey; j++) {
                 tempEnemyShipObjectHashMapLeft = new HashMap<>();
-                for (int k = 0; k <= maxWidthKey; k++) {
+                for (int k = -3; k <= maxWidthKey; k++) {
                     tempEnemyShipObjectHashMapRight = new HashMap<>();
-                    for (int l = 0; l <= maxWidthKey; l++) {
+                    for (int l = -3; l <= maxWidthKey; l++) {
                         tempArrayList = new ArrayList<>();
                         tempEnemyShipObjectHashMapRight.put(l, tempArrayList);
                     }
@@ -61,24 +63,24 @@ class EnemyShipObjectHashMap {
     }
 
     void changeHashMapSize(int maxHeight, int maxWidth) {
-        int tempMaxHeightKey = maxHeight / heightScaleValue;
-        int tempMaxWidthKey = maxWidth / widthScaleValue;
+        int tempMaxHeightKey = (maxHeight + 350) / heightScaleValue;
+        int tempMaxWidthKey = (maxWidth + 350) / widthScaleValue;
 
         if (tempMaxHeightKey > maxHeightKey || tempMaxWidthKey > maxWidthKey) {
-            for (int i = 0; i <= tempMaxHeightKey; i++) {
+            for (int i = -3; i <= tempMaxHeightKey; i++) {
                 if (i <= maxHeightKey) {
-                    for (int j = 0; j <= tempMaxHeightKey; j++) {
+                    for (int j = -3; j <= tempMaxHeightKey; j++) {
                         if (j <= maxHeightKey) {
-                            for (int k = 0; k <= tempMaxWidthKey; k++) {
+                            for (int k = -3; k <= tempMaxWidthKey; k++) {
                                 if (k <= maxWidthKey) {
                                     for (int l = maxWidthKey + 1; l <= tempMaxWidthKey; l++) {
-                                        tempArrayList = new ArrayList<EnemyShipObject>();
+                                        tempArrayList = new ArrayList<>();
                                         ((enemyObjectHashMap.get(i)).get(j)).get(k).put(l, tempArrayList);
                                     }
                                 } else {
                                     tempEnemyShipObjectHashMapRight = new HashMap<>();
-                                    for (int l = 0; l <= tempMaxWidthKey; l++) {
-                                        tempArrayList = new ArrayList<EnemyShipObject>();
+                                    for (int l = -3; l <= tempMaxWidthKey; l++) {
+                                        tempArrayList = new ArrayList<>();
                                         tempEnemyShipObjectHashMapRight.put(l, tempArrayList);
                                     }
                                     tempEnemyShipObjectHashMapLeft.put(k, tempEnemyShipObjectHashMapRight);
@@ -86,10 +88,10 @@ class EnemyShipObjectHashMap {
                             }
                         } else {
                             tempEnemyShipObjectHashMapLeft = new HashMap<>();
-                            for (int k = 0; k <= tempMaxWidthKey; k++) {
+                            for (int k = -3; k <= tempMaxWidthKey; k++) {
                                 tempEnemyShipObjectHashMapRight = new HashMap<>();
-                                for (int l = 0; l <= tempMaxWidthKey; l++) {
-                                    tempArrayList = new ArrayList<EnemyShipObject>();
+                                for (int l = -3; l <= tempMaxWidthKey; l++) {
+                                    tempArrayList = new ArrayList<>();
                                     tempEnemyShipObjectHashMapRight.put(l, tempArrayList);
                                 }
                                 tempEnemyShipObjectHashMapLeft.put(k, tempEnemyShipObjectHashMapRight);
@@ -99,12 +101,12 @@ class EnemyShipObjectHashMap {
                     }
                 } else {
                     tempEnemyShipObjectHashMapBottom = new HashMap<>();
-                    for (int j = 0; j <= tempMaxHeightKey; j++) {
+                    for (int j = -3; j <= tempMaxHeightKey; j++) {
                         tempEnemyShipObjectHashMapLeft = new HashMap<>();
-                        for (int k = 0; k <= tempMaxWidthKey; k++) {
+                        for (int k = -3; k <= tempMaxWidthKey; k++) {
                             tempEnemyShipObjectHashMapRight = new HashMap<>();
-                            for (int l = 0; l <= tempMaxWidthKey; l++) {
-                                tempArrayList = new ArrayList<EnemyShipObject>();
+                            for (int l = -3; l <= tempMaxWidthKey; l++) {
+                                tempArrayList = new ArrayList<>();
                                 tempEnemyShipObjectHashMapRight.put(l, tempArrayList);
                             }
                             tempEnemyShipObjectHashMapLeft.put(k, tempEnemyShipObjectHashMapRight);
@@ -173,21 +175,6 @@ class EnemyShipObjectHashMap {
                         int len = getEnemyShipObjectListSizeWithKeys(i, j, k, l);
                         for (int m = 0; m < len; m++) {
                             getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).stopAllThreads();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void startAllEnemyShipThreads() {
-        for (int i = 0; i <= maxHeightKey; i++) {
-            for (int j = 0; j <= maxHeightKey; j++) {
-                for (int k = 0; k <= maxWidthKey; k++) {
-                    for (int l = 0; l <= maxWidthKey; l++) {
-                        int len = getEnemyShipObjectListSizeWithKeys(i, j, k, l);
-                        for (int m = 0; m < len; m++) {
-                            getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).introduceEnemyShip(canvas_bottom, canvas_right);
                         }
                     }
                 }

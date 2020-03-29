@@ -235,22 +235,16 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
                         // Below part draws enemy bullets and ships
                         enemyHashMapMaxHeightKey = enemyHashMap.getMaxHeightKey();
                         enemyHashMapMaxWidthKey = enemyHashMap.getMaxWidthKey();
-                        for(int i  = 0; i <= enemyHashMapMaxHeightKey; i++)
-                        {
-                            for(int j = 0; j <= enemyHashMapMaxHeightKey; j++)
-                            {
-                                for(int k = 0; k <= enemyHashMapMaxWidthKey; k++)
-                                {
-                                    for(int l = 0; l <= enemyHashMapMaxWidthKey; l++)
-                                    {
+                        for (int i = -3; i <= enemyHashMapMaxHeightKey; i++) {
+                            for (int j = -3; j <= enemyHashMapMaxHeightKey; j++) {
+                                for (int k = -3; k <= enemyHashMapMaxWidthKey; k++) {
+                                    for (int l = -3; l <= enemyHashMapMaxWidthKey; l++) {
                                         int lengthOfList = enemyHashMap.getEnemyShipObjectListSizeWithKeys(i, j, k, l);
-                                        for(int m = 0; m < lengthOfList; m++)
-                                        {
+                                        for (int m = 0; m < lengthOfList; m++) {
                                             tempEnemyBulletQueue = enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m).getEnemyBulletQueue();
                                             int queueSize = tempEnemyBulletQueue.getSize();
-                                            for(int n = 0; n < queueSize; n++)
-                                            {
-                                                canvas.drawBitmap(tempEnemyBulletQueue.get(n).getBulletFrame(), 
+                                            for (int n = 0; n < queueSize; n++) {
+                                                canvas.drawBitmap(tempEnemyBulletQueue.get(n).getBulletFrame(),
                                                         tempEnemyBulletQueue.get(n).getLocationLeft(),
                                                         tempEnemyBulletQueue.get(n).getLocationTop(), null);
                                             }
