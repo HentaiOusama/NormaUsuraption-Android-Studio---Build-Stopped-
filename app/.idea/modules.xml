@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../NormaUsurpation.iml" filepath="$PROJECT_DIR$/../NormaUsurpation.iml" group="NormaUsurpation" />
+      <module fileurl="file://$PROJECT_DIR$/app.iml" filepath="$PROJECT_DIR$/app.iml" group="NormaUsurpation/app" />
+    </modules>
+  </component>
+</project>
