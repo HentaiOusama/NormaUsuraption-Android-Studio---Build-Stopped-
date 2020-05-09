@@ -31,6 +31,8 @@ class FriendlyShipObject implements Runnable {
     // Misc Variables and Overridden run Method
     private String TAG = "MY DEBUG TAG";
     private float canvas_bottom, canvas_right;
+    private boolean isEnemyHashMapAvailable = false;
+    private EnemyShipObjectHashMap enemyHashMap;
 
     @Override
     public void run() {
@@ -201,6 +203,9 @@ class FriendlyShipObject implements Runnable {
                 bulletQueueLength--;
                 i--;
             } else {
+                if(isEnemyHashMapAvailable) {
+                    enemyHashMap.removeEnemyShipsCoincidingWithGivenBullet(tempBullet);
+                }
                 friendlyBulletQueue.get(i).setLocationTop(tempTop);
                 friendlyBulletQueue.get(i).setLocationLeft(tempLeft);
             }
@@ -252,5 +257,12 @@ class FriendlyShipObject implements Runnable {
 
     myQueue<Bullet> getFriendlyBulletQueue() {
         return friendlyBulletQueue;
+    }
+
+
+    // Methods regarding enemies
+    void takeEnemyHashMap(EnemyShipObjectHashMap enemyHashMap) {
+        this.enemyHashMap = enemyHashMap;
+        isEnemyHashMapAvailable = true;
     }
 }

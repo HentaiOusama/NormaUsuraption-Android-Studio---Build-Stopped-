@@ -5,9 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 class EnemyLevelBuilder {
 
-    private EnemyShipObjectHashMap enemyHashMap;
+    private EnemyShipObjectHashMap enemyHashMap, tempEnemyHashMap;
+    private float[] constructionValues = new float[6];
+    private boolean shouldUpdateHashMap = false;
     private float canvas_bottom, canvas_right;
     private Context context;
     private PresetMovementPatterns enemyMovementBuilder = new PresetMovementPatterns();
@@ -15,15 +19,17 @@ class EnemyLevelBuilder {
     private final String TAG = "MY DEBUG TAG";
     private EnemyShipObject tempEnemyObject;
     private float leftCenterOffset = -50;
+    private final int MAX_FRAME_TIME;
 
 
     // Constructor
-    EnemyLevelBuilder(Context context, float canvas_right, float canvas_bottom, EnemyShipObjectHashMap enemyHashMap) {
+    EnemyLevelBuilder(Context context, float canvas_right, float canvas_bottom, EnemyShipObjectHashMap enemyHashMap,
+                      int MAX_FRAME_TIME) {
         this.context = context;
         this.canvas_right = canvas_right;
         this.canvas_bottom = canvas_bottom;
         this.enemyHashMap = enemyHashMap;
-
+        this.MAX_FRAME_TIME = MAX_FRAME_TIME;
     }
 
 
@@ -47,6 +53,55 @@ class EnemyLevelBuilder {
     };
 
 
+    // This thread handles updating the hashMap
+    private Thread hashMapUpdatingThread = new Thread() {
+        @Override
+        public void run() {
+            super.run();
+            while (shouldUpdateHashMap) {
+                long updateStartTime = System.nanoTime();
+                enemyHashMap.getConstructionValuesIn(constructionValues);
+                tempEnemyHashMap = new EnemyShipObjectHashMap(constructionValues[0], constructionValues[1], (int) constructionValues[2],
+                        (int) constructionValues[3], constructionValues[4], constructionValues[5]);
+                int maxHeightKey = tempEnemyHashMap.getMaxHeightKey();
+                int maxWidthKey = tempEnemyHashMap.getMaxWidthKey();
+                for(int i = -3; i <= maxHeightKey; i++) {
+                    for (int j = -3; j <= maxHeightKey; j++) {
+                        for (int k = -3; k <= maxWidthKey; k++) {
+                            for (int l = -3; l <= maxWidthKey; l++) {
+                                int listLength = enemyHashMap.getEnemyShipObjectListSizeWithKeys(i, j, k, l);
+                                for(int m = 0; m < listLength; m++) {
+                                    try {
+                                        EnemyShipObject temp = enemyHashMap.getEnemyShipObjectWithKeysAndIndex(i, j, k, l, m);
+                                        tempEnemyHashMap.addEnemyShipObject(temp, temp.getEnemyShipTop(), temp.getEnemyShipBottom(),
+                                                temp.getEnemyShipLeft(), temp.getEnemyShipRight(), false);
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "hashMapUpdaterIndexError :- ", e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                try {
+                    enemyHashMap = (EnemyShipObjectHashMap) tempEnemyHashMap.clone();
+                } catch (CloneNotSupportedException e) {
+                    Log.e(TAG, "Error while cloning:- ", e);
+                }
+                long updatingTime = (System.nanoTime() - updateStartTime) / 1000000;
+                if (updatingTime < MAX_FRAME_TIME) {
+                    try {
+                        Thread.sleep(MAX_FRAME_TIME - updatingTime);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "run: ", e);
+                    }
+                }
+            }
+        }
+    };
+
+
     // This is the main method called by the GamePlayView asking this class to build the HashMap given in the constructor
     void startBuildingLevel(int currentStageLevel) {
         this.currentStageLevel = currentStageLevel;
@@ -57,6 +112,15 @@ class EnemyLevelBuilder {
         while (true) {
             try {
                 levelBuildingThread.join();
+                break;
+            } catch (Exception e) {
+                Log.e(TAG, "stopBuildingLevel: ", e);
+            }
+        }
+        shouldUpdateHashMap = false;
+        while (true) {
+            try {
+                hashMapUpdatingThread.join();
                 break;
             } catch (Exception e) {
                 Log.e(TAG, "stopBuildingLevel: ", e);
@@ -88,7 +152,7 @@ class EnemyLevelBuilder {
                 "red_animated_bullet_", 10, 1, 0,
                 50, 0, 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight(), true);
 
         tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap1, 100, 0,
                 canvas_right, enemyMovementBuilder.getMovementPatterQueueForEnemyShipType(1),
@@ -97,7 +161,7 @@ class EnemyLevelBuilder {
                 10, 1, 0, 50, 0,
                 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight(), true);
         try {
             Thread.sleep(40);
         } catch (Exception e) {
@@ -114,12 +178,17 @@ class EnemyLevelBuilder {
                 10, 1, 0, 50, 0,
                 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight(), true);
         try {
             Thread.sleep(40);
         } catch (Exception e) {
             Log.e(TAG, "buildLevel1: Error while sleeping the Thread", e);
         }
+
+
+        // In the end, start hashMapUpdater :-
+        shouldUpdateHashMap = true;
+        hashMapUpdatingThread.start();
     }
 
 
@@ -133,7 +202,7 @@ class EnemyLevelBuilder {
                 "red_animated_bullet_", 10, 1, 0,
                 50, 0, 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight(), true);
 
         tempEnemyShipBitmap2 = buildEnemyImage("/X/X INPUT NAME HERE /X/X", (float) 9.0);
         tempEnemyObject = new EnemyShipObject(context, tempEnemyShipBitmap2, 100, -200,
@@ -145,11 +214,16 @@ class EnemyLevelBuilder {
                 10, 1, 0, 50, 0,
                 0, 1000, 60);
         enemyHashMap.addEnemyShipObject(tempEnemyObject, tempEnemyObject.getEnemyShipTop(), tempEnemyObject.getEnemyShipBottom(),
-                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight());
+                tempEnemyObject.getEnemyShipLeft(), tempEnemyObject.getEnemyShipRight(), true);
         try {
             Thread.sleep(40);
         } catch (Exception e) {
             Log.e(TAG, "buildLevel1: Error while sleeping the Thread", e);
         }
+
+
+        // In the end, start hashMapUpdater :-
+        shouldUpdateHashMap = true;
+        hashMapUpdatingThread.start();
     }
 }

@@ -568,7 +568,8 @@ public class GamePlayView extends SurfaceView implements SurfaceHolder.Callback,
     public void buildLevel(int currentStageLevel) {
         enemyHashMap = new EnemyShipObjectHashMap(canvas_bottom, canvas_right, 385, 175,
                 canvas_right, canvas_bottom);
-        enemyLevelBuilder = new EnemyLevelBuilder(context, canvas_right, canvas_bottom, enemyHashMap);
+        currentFriendlyShip.takeEnemyHashMap(enemyHashMap);
+        enemyLevelBuilder = new EnemyLevelBuilder(context, canvas_right, canvas_bottom, enemyHashMap, MAX_FRAME_TIME);
         enemyLevelBuilder.startBuildingLevel(currentStageLevel);
     }
 
